@@ -3,20 +3,41 @@ module.exports = {
     timeout: 10000,
     monitors: [
         {
-            enabled: true,
             name: 'Silex API',
+            enabled: true,
             url: 'http://editor.silex.me/api/v1.0/dropbox/connect',
-            interval: 20000,
-            timeout: 20000,
+            interval: 5000,
+            timeout: 5000,
+            alerts: ['zapier.com webhook'],
             type: 'ping'
         },
         {
-            enabled: true,
             name: 'Silex website',
+            enabled: true,
             url: 'http://www.silex.me/',
+            interval: 5000,
+            timeout: 5000,
+            alerts: ['zapier.com webhook'],
+            type: 'page-load'
+        },
+        {
+            name: 'local file',
+            enabled: false,
+            url: 'http://0.0.0.0:8080',
             interval: 2000,
             timeout: 2000,
             type: 'page-load'
+        }
+    ],
+    alerts: [
+        {
+            name: 'zapier.com webhook',
+            enabled: true,
+            url: 'https://zapier.com/hooks/catch/ogk8oq/',
+            method: 'get',
+            params: 'status=%s&message=%s',
+            headers: [],
+            type: 'webhook'
         }
     ]
 }

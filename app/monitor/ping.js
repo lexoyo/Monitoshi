@@ -51,6 +51,14 @@ module.exports = PingMonitor = function(config, opt_timeout, opt_interval) {
     this.timerId = null;
 
 
+    /**
+     * state of the monitoring
+     * used to dispatch up/down events only when state changes
+     * @type {PingMonitor.State}
+     */
+    this.state = PingMonitor.State.UP;
+
+
     // call super
     events.EventEmitter.call(this);
 };
@@ -86,21 +94,29 @@ PingMonitor.prototype.poll = function() {
     var req = http.get(this.url, function(res) {
         // notify the listeners
         if(res.statusCode === 200) {
-            this.emit('success', res.statusCode);
+            if (this.state === PingMonitor.State.DOWN) {
+                this.emit('success', res.statusCode);
+            }
+            this.state = PingMonitor.State.UP;
         }
         else {
-            this.emit('error', new Error('HTTPERROR', res.statusCode));
+            if (this.state === PingMonitor.State.UP) {
+                this.emit('error', new Error('HTTPERROR', res.statusCode));
+            }
+            this.state = PingMonitor.State.DOWN;
         }
     }.bind(this))
     .on('error', function(e) {
-        // notify the listeners
-        if(hasTimedout) {
-            this.emit('error', new Error('TIMEOUT'));
-            hasTimedout = false;
+        if (this.state === PingMonitor.State.UP) {
+            // notify the listeners
+            var error = e;
+            if(hasTimedout === true) {
+                hasTimedout = false;
+                error = new Error('TIMEOUT');
+            }
+            this.emit('error', error);
         }
-        else {
-            this.emit('error', e);
-        }
+        this.state = PingMonitor.State.DOWN;
     }.bind(this))
     .on('socket', function (socket) {
         socket.setTimeout(this.timeout);
@@ -111,3 +127,12 @@ PingMonitor.prototype.poll = function() {
     }.bind(this));
 };
 
+
+/**
+ * State of the monitor
+ * @enum
+ */
+PingMonitor.State = {
+    DOWN: 0,
+    UP: 1
+}

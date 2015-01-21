@@ -20,6 +20,24 @@ if (!module.parent) {
 }
 */
 
+// build the alerts from config
+var WebHookAlert = require('./alert/web-hook');
+var alerts = [];
+config.alerts.forEach(function(alertConfig) {
+    if (alertConfig.enabled !== false) {
+        console.log('creating alert:', alertConfig.name, alertConfig.type);
+        // create the monitor with this config
+        var alert = null;
+        switch(alertConfig.type) {
+            case 'webhook':
+            default:
+                alert = new WebHookAlert(alertConfig);
+            break;
+        }
+        alerts[alertConfig.name] = alert;
+    }
+});
+
 // browse monitors from config
 var PingMonitor = require('./monitor/ping');
 config.monitors.forEach(function(monitorConfig) {
@@ -36,9 +54,25 @@ config.monitors.forEach(function(monitorConfig) {
         monitor
             .on('success', function(statusCode) {
                 console.log('Monitor',  monitorConfig.name, monitorConfig.type, 'is up', statusCode);
+                if(monitorConfig.alerts) {
+                    monitorConfig.alerts.forEach(function(alertId) {
+                        console.log('alert', alertId, alerts[alertId]);
+                        if (alerts[alertId]) {
+                            alerts[alertId].send(monitorConfig.name + ' is UP', 'System is now operational (' + statusCode + ')');
+                        }
+                    });
+                }
             })
             .on('error', function(err) {
                 console.error('Monitor',  monitorConfig.name, monitorConfig.type, 'is down -', err);
+                if(monitorConfig.alerts) {
+                    monitorConfig.alerts.forEach(function(alertId) {
+                        console.log('alert', alertId, alerts[alertId]);
+                        if (alerts[alertId]) {
+                            alerts[alertId].send(monitorConfig.name + ' is DOWN', monitorConfig.name + ' is DOWN (' + statusCode + ')');
+                        }
+                    });
+                }
             });
         monitor.start();
     }
