@@ -1,0 +1,29 @@
+{
+  "name": "Monitoshi",
+  "description": "Website uptime monitoring",
+  "version": "0.0.1",
+  "author": {
+    "name": "lexoyo"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/lexoyo/Monitoshi.git"
+  },
+  "keywords": [
+    "express",
+    "monitoring",
+    "uptime",
+    "rest",
+    "api"
+  ],
+  "main": "./app/index.js",
+  "license": "MIT",
+  "engines": {
+    "node": "~0.10.35",
+    "npm": "~1.4.28"
+  },
+  "readmeFilename": "readme.md",
+  "dependencies": {
+    "express": "^4.11.0"
+  }
+}
