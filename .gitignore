@@ -3,3 +3,4 @@
 .temp
 .cache
 node_modules
+*.env

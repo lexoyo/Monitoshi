@@ -1,13 +1,22 @@
+// imports
 var express    = require('express');
 var app = module.exports = express();
 
 // config
-var fs = require('fs');
-var configFile = process.env.MT_CONFIG_FILE || __dirname + '/../sample-config.js';
-var config = require(configFile);
-app.set('config', config);
+var config;
+console.log('MT_CONFIG =', process.env.MT_CONFIG);
+if (process.env.MT_CONFIG) {
+    config = JSON.parse(process.env.MT_CONFIG);
+}
+else {
+    var fs = require('fs');
+    var configFile = process.env.MT_CONFIG_FILE || __dirname + '/../default-config.js';
+    config = require(configFile);
+    app.set('config', config);
+}
 console.info('***********************************');
 console.info('Monitoshi starting with', config.monitors.length, 'monitors.');
+console.info('***********************************');
 
 /*
 // API
@@ -58,7 +67,11 @@ config.monitors.forEach(function(monitorConfig) {
                     monitorConfig.alerts.forEach(function(alertId) {
                         console.log('alert', alertId, alerts[alertId]);
                         if (alerts[alertId]) {
-                            alerts[alertId].send(monitorConfig.name + ' is UP', 'System is now operational (' + statusCode + ')');
+                            monitorConfig.status = statusCode;
+                            alerts[alertId].send(
+                                resolveTemplate(alerts[alertId].config.upStatus, monitorConfig),
+                                resolveTemplate(alerts[alertId].config.upMessage, monitorConfig)
+                            );
                         }
                     });
                 }
@@ -69,7 +82,11 @@ config.monitors.forEach(function(monitorConfig) {
                     monitorConfig.alerts.forEach(function(alertId) {
                         console.log('alert', alertId, alerts[alertId]);
                         if (alerts[alertId]) {
-                            alerts[alertId].send(monitorConfig.name + ' is DOWN', monitorConfig.name + ' is DOWN (' + statusCode + ')');
+                            monitorConfig.status = err.toString();
+                            alerts[alertId].send(
+                                resolveTemplate(alerts[alertId].config.downStatus, monitorConfig),
+                                resolveTemplate(alerts[alertId].config.downMessage, monitorConfig)
+                            );
                         }
                     });
                 }
@@ -77,3 +94,13 @@ config.monitors.forEach(function(monitorConfig) {
         monitor.start();
     }
 });
+
+
+function resolveTemplate(str, obj) {
+    var res = str;
+    for(var idx in obj) {
+        var reg = new RegExp('{{' + idx + '}}', 'g');
+        res = res.replace(reg, obj[idx]);
+    }
+    return res;
+}
