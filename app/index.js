@@ -18,16 +18,17 @@ console.info('***********************************');
 console.info('Monitoshi starting with', config.monitors.length, 'monitors.');
 console.info('***********************************');
 
-/*
 // API
-app.get('/isup/:idx', require('./routes/isup.js'));
+app.get('/isup/', function(res, res) {
+    res.send('{"success": true}')
+});
+// app.get('/isup/:idx', require('./routes/isup.js'));
 if (!module.parent) {
   var port = process.env.PORT || 7070;
   app.listen(port, function() {
     console.log('Listening on ' + port);
   });
 }
-*/
 
 // build the alerts from config
 var WebHookAlert = require('./alert/web-hook');
