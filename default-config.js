@@ -32,14 +32,33 @@ module.exports = {
     "alerts": [
         {
             "name": "zapier.com webhook",
-            "enabled": true,
+            "enabled": false,
             "url": "https://zapier.com/hooks/catch/ogk8oq/",
             "method": "get",
             "params": "status=%s&message=%s",
             "upStatus": "{{name}} is UP",
-            "upMessage": "System is now operational (status is {{status}})",
+            "upMessage": "System is now operational (status is {{status}}). \n{{url}}",
             "downStatus": "{{name}} is DOWN",
-            "downMessage": "{{name}} failed (status is {{status}})",
+            "downMessage": "{{name}} failed (status is {{status}}). \n{{url}}",
+            "type": "webhook"
+        },
+        {
+            "name": "huginn webhook",
+            "enabled": true,
+            "url": "https://huginnlexoyo.herokuapp.com/users/1/web_requests/7/lexoro",
+            "post_options": {
+                "host": "huginnlexoyo.herokuapp.com",
+                "path": "XXXXXXXXXXXXXXXXXXXXX",
+                "method": "POST",
+                "headers": {
+                    "Content-Type": "application/x-www-form-urlencoded",
+                },
+            },
+            "method": "post",
+            "upStatus": "{{name}} is UP",
+            "upMessage": "System is now operational (status is {{status}}). \n{{url}}",
+            "downStatus": "{{name}} is DOWN",
+            "downMessage": "{{name}} failed (status is {{status}}). \n{{url}}",
             "type": "webhook"
         }
     ]

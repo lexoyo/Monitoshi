@@ -4,7 +4,6 @@ var app = module.exports = express();
 
 // config
 var config;
-console.log('MT_CONFIG =', process.env.MT_CONFIG);
 if (process.env.MT_CONFIG) {
     config = JSON.parse(process.env.MT_CONFIG);
 }
@@ -12,7 +11,9 @@ else {
     var fs = require('fs');
     var configFile = process.env.MT_CONFIG_FILE || __dirname + '/../default-config.js';
     config = require(configFile);
-    app.set('config', config);
+    console.log('MT_CONFIG env variable is not defined, and MT_CONFIG_FILE is set to',
+        process.env.MT_CONFIG_FILE,
+        'The config will be read from', configFile);
 }
 console.info('***********************************');
 console.info('Monitoshi starting with', config.monitors.length, 'monitors.');
