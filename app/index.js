@@ -18,19 +18,7 @@ else {
 console.info('***********************************');
 console.info('Monitoshi starting with', config.monitors.length, 'monitors.');
 console.info('***********************************');
-/* */
-// API
-app.get('/isup/', function(res, res) {
-    res.send('{"success": true}')
-});
-// app.get('/isup/:idx', require('./routes/isup.js'));
-if (!module.parent) {
-  var port = process.env.PORT || 7070;
-  app.listen(port, function() {
-    console.log('Listening on ' + port);
-  });
-}
-/* */
+
 // build the alerts from config
 var WebHookAlert = require('./alert/web-hook');
 var alerts = [];
@@ -64,7 +52,7 @@ config.monitors.forEach(function(monitorConfig) {
         }
         monitor
             .on('success', function(statusCode) {
-                console.log('Monitor',  monitorConfig.name, monitorConfig.type, 'is up', statusCode);
+                console.log('** Monitor',  monitorConfig.name, monitorConfig.type, 'is up', statusCode);
                 if(monitorConfig.alerts) {
                     monitorConfig.alerts.forEach(function(alertId) {
                         console.log('alert', alertId, alerts[alertId]);
@@ -79,7 +67,7 @@ config.monitors.forEach(function(monitorConfig) {
                 }
             })
             .on('error', function(err) {
-                console.error('Monitor',  monitorConfig.name, monitorConfig.type, 'is down -', err);
+                console.error('** Monitor',  monitorConfig.name, monitorConfig.type, 'is down -', err);
                 if(monitorConfig.alerts) {
                     monitorConfig.alerts.forEach(function(alertId) {
                         console.log('alert', alertId, alerts[alertId]);
@@ -97,7 +85,7 @@ config.monitors.forEach(function(monitorConfig) {
     }
 });
 
-
+// utility function
 function resolveTemplate(str, obj) {
     var res = str;
     for(var idx in obj) {
@@ -105,4 +93,24 @@ function resolveTemplate(str, obj) {
         res = res.replace(reg, obj[idx]);
     }
     return res;
+}
+
+// API
+app.get('/isup/', function(res, res) {
+    res.send('{"success": true}')
+});
+// app.get('/isup/:idx', require('./routes/isup.js'));
+
+// public folder
+app.use('/', express.static(__dirname + '/../public'));
+
+// listen to http requests
+if (!module.parent) {
+  var port = process.env.PORT || 7070;
+  app.listen(port, function() {
+    console.log('Listening on ' + port);
+  });
+}
+else {
+    console.log('do not listen to any port since there is a parent app');
 }
