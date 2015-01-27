@@ -23,37 +23,39 @@ module.exports = WebHookAlert = function(config) {
 
 /**
  * send notification
+ * @param {string} title
+ * @param {string} details
  */
-WebHookAlert.prototype.send = function(status, message) {
+WebHookAlert.prototype.send = function(title, details, detailsNoHtml) {
     var protocol = http;
-    if (this.config.url.indexOf('https') === 0) {
+    if (this.config['url'].indexOf('https') === 0) {
         protocol = https;
     }
-    if (this.config.method === 'get') {
-        var url = util.format(this.config.url + '?' + this.config.params, status, message);
-        console.log('alert sent', url);
+    console.log('Send alert to webhook', this.config['url'], '(' + this.config['method'] + ')');
+    if (this.config['method'] === 'get') {
+        var url = util.format(this.config['url'] + '?' + this.config['params'], title, details, detailsNoHtml);
         var req = protocol.get(url, function(res) {
-            console.log('alert sent done', res.statusCode);
+            console.log('alert sent done - status is: ', res.statusCode);
         }.bind(this));
     }
     else {
-        var post_data = querystring.stringify({
-            status: status,
-            message: message,
+        var postData = querystring.stringify({
+            'title': title,
+            'details': details,
+            'details_no_html': detailsNoHtml
         });
-        var post_options = this.config.post_options;
-        post_options.headers['Content-Length'] = post_data.length;
-        console.log('alert sent', post_data, post_options);
+        var post_options = this.config['post_options'];
+        post_options.headers['Content-Length'] = postData.length;
 
         // Set up the request
         var post_req = protocol.request(post_options, function(res) {
             res.setEncoding('utf8');
             res.on('data', function (chunk) {
-                console.log('alert post Response: ' + chunk);
+                console.log('alert sent done - response is: ' + chunk);
             });
         });
         // post the data
-        post_req.write(post_data);
+        post_req.write(postData);
         post_req.end();
     }
 };

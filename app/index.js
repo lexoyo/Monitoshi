@@ -55,12 +55,13 @@ config.monitors.forEach(function(monitorConfig) {
                 console.log('** Monitor',  monitorConfig.name, monitorConfig.type, 'is up', statusCode);
                 if(monitorConfig.alerts) {
                     monitorConfig.alerts.forEach(function(alertId) {
-                        console.log('alert', alertId, alerts[alertId]);
+                        console.log('alert', alertId);
                         if (alerts[alertId]) {
                             monitorConfig.status = statusCode;
                             alerts[alertId].send(
-                                resolveTemplate(alerts[alertId].config.upStatus, monitorConfig),
-                                resolveTemplate(alerts[alertId].config.upMessage, monitorConfig)
+                                resolveTemplate(alerts[alertId].config['up_title'], monitorConfig),
+                                resolveTemplate(alerts[alertId].config['up_details'], monitorConfig),
+                                resolveTemplate(alerts[alertId].config['up_details_no_html'], monitorConfig)
                             );
                         }
                     });
@@ -70,12 +71,13 @@ config.monitors.forEach(function(monitorConfig) {
                 console.error('** Monitor',  monitorConfig.name, monitorConfig.type, 'is down -', err);
                 if(monitorConfig.alerts) {
                     monitorConfig.alerts.forEach(function(alertId) {
-                        console.log('alert', alertId, alerts[alertId]);
+                        console.log('alert', alertId);
                         if (alerts[alertId]) {
                             monitorConfig.status = err.toString();
                             alerts[alertId].send(
-                                resolveTemplate(alerts[alertId].config.downStatus, monitorConfig),
-                                resolveTemplate(alerts[alertId].config.downMessage, monitorConfig)
+                                resolveTemplate(alerts[alertId].config['down_title'], monitorConfig),
+                                resolveTemplate(alerts[alertId].config['down_details'], monitorConfig),
+                                resolveTemplate(alerts[alertId].config['down_details_no_html'], monitorConfig)
                             );
                         }
                     });
@@ -92,6 +94,8 @@ function resolveTemplate(str, obj) {
         var reg = new RegExp('{{' + idx + '}}', 'g');
         res = res.replace(reg, obj[idx]);
     }
+    res = res.replace(/{{date}}/g, (new Date()).toString());
+    res = res.replace(/{{env}}/g, process.env.MT_ENV);
     return res;
 }
 

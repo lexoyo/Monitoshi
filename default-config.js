@@ -33,7 +33,7 @@ module.exports = {
         {
             "name": "zapier.com webhook",
             "enabled": false,
-            "url": "https://zapier.com/hooks/catch/ogk8oq/",
+            "url": "https://zapier.com/hooks/catch/xxxxxx/",
             "method": "get",
             "params": "status=%s&message=%s",
             "upStatus": "{{name}} is UP",
