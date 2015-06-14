@@ -24,5 +24,8 @@
   "readmeFilename": "readme.md",
   "dependencies": {
     "express": "^4.11.0"
+  },
+  "scripts": {
+    "start": "node app/"
   }
 }
