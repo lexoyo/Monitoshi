@@ -47,7 +47,7 @@ config.monitors.forEach(function(monitorConfig) {
         switch(monitorConfig.type) {
             case 'ping':
             default:
-                monitor = new PingMonitor(monitorConfig, config.timeout, config.interval);
+                monitor = new PingMonitor(monitorConfig, config.timeout, config.interval, config.attempts);
             break;
         }
         monitor

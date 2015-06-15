@@ -1,6 +1,7 @@
 module.exports = {
     "interval": 10000,
     "timeout": 10000,
+    "attempts": 3,
     "monitors": [
         {
             "name": "Silex API",
@@ -9,6 +10,7 @@ module.exports = {
             "interval": 5000,
             "timeout": 5000,
             "alerts": ["zapier.com webhook"],
+            "attempts": 5,
             "type": "ping"
         },
         {

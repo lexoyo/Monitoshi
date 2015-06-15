@@ -48,6 +48,7 @@ WebHookAlert.prototype.send = function(title, details, detailsNoHtml) {
         post_options.headers['Content-Length'] = postData.length;
 
         // Set up the request
+        // FIXME: handle errors (it crashes the app for now)
         var post_req = protocol.request(post_options, function(res) {
             res.setEncoding('utf8');
             res.on('data', function (chunk) {

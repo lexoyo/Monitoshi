@@ -6,11 +6,12 @@ var util = require('util');
 /**
  * monitor one URL
  * @class PingMonitor
- * @param {Object} config
- * @param {?number=} opt_timeout
- * @param {?number=} opt_interval
+ * @param {Object} config object containing other config elements (name, url)
+ * @param {?number=} opt_timeout  timeout after which the website is considered to be down (ms), default is 1000
+ * @param {?number=} opt_interval interval after which the website is polled again (ms), default is 1000
+ * @param {?number=} opt_attempts number of attempts before an URL is considered down, default is 3
  */
-module.exports = PingMonitor = function(config, opt_timeout, opt_interval) {
+module.exports = PingMonitor = function(config, opt_timeout, opt_interval, opt_attempts) {
     /**
      * interval after which the website is polled again
      * may be specified in the main config object or in the monitor config
@@ -28,6 +29,21 @@ module.exports = PingMonitor = function(config, opt_timeout, opt_interval) {
      * @default 10000
      */
     this.timeout = config.timeout || opt_timeout || 10000;
+
+
+    /**
+     * number of attempts before an URL is considered down
+     * @type {number}
+     * @default 3
+     */
+    this.attempts = config.attempts || opt_attempts || 3;
+
+
+    /**
+     * number of attempts already made and the URL was down
+     * @type {number}
+     */
+    this.failed = 0;
 
 
     /**
@@ -98,25 +114,34 @@ PingMonitor.prototype.poll = function() {
                 this.emit('success', res.statusCode);
             }
             this.state = PingMonitor.State.UP;
+            this.failed = 0;
         }
         else {
+            if(++this.failed >= this.attempts) {
+                if (this.state === PingMonitor.State.UP) {
+                    this.emit('error', new Error('HTTPERROR', res.statusCode));
+                }
+                this.state = PingMonitor.State.DOWN;
+            }
+        }
+        // abort, otherwise it emmits a socket timeout after the timeout is elapsed
+        req.abort();
+    }.bind(this))
+    .on('error', function(e) {
+        if(++this.failed >= this.attempts) {
             if (this.state === PingMonitor.State.UP) {
-                this.emit('error', new Error('HTTPERROR', res.statusCode));
+                // notify the listeners
+                var error = e;
+                if(hasTimedout === true) {
+                    hasTimedout = false;
+                    error = new Error('TIMEOUT');
+                }
+                this.emit('error', error);
             }
             this.state = PingMonitor.State.DOWN;
         }
-    }.bind(this))
-    .on('error', function(e) {
-        if (this.state === PingMonitor.State.UP) {
-            // notify the listeners
-            var error = e;
-            if(hasTimedout === true) {
-                hasTimedout = false;
-                error = new Error('TIMEOUT');
-            }
-            this.emit('error', error);
-        }
-        this.state = PingMonitor.State.DOWN;
+        // just in case, to prevent fireing timeout
+        req.abort();
     }.bind(this))
     .on('socket', function (socket) {
         socket.setTimeout(this.timeout);
