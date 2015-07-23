@@ -23,7 +23,9 @@
   },
   "readmeFilename": "readme.md",
   "dependencies": {
-    "express": "^4.11.0"
+    "express": "^4.11.0",
+    "mongodb": "^2.0.39",
+    "mongoose": "^4.0.8"
   },
   "scripts": {
     "start": "node app/"
