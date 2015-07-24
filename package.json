@@ -23,11 +23,12 @@
   },
   "readmeFilename": "readme.md",
   "dependencies": {
+    "body-parser": "^1.13.2",
     "express": "^4.11.0",
-    "mongodb": "^2.0.39",
-    "mongoose": "^4.0.8"
+    "mongodb": "^2.0.39"
   },
   "scripts": {
-    "start": "node app/"
+    "start": "node app/",
+    "serve": "mongod -dbpath ./data"
   }
 }

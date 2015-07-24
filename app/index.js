@@ -1,6 +1,7 @@
 // imports
 var express    = require('express');
 var app = module.exports = express();
+var bodyParser = require('body-parser');
 
 // config
 var config;
@@ -16,92 +17,78 @@ else {
         'The config will be read from', configFile);
 }
 console.info('***********************************');
-console.info('Monitoshi starting with', config.monitors.length, 'monitors.');
+console.info('Monitoshi starting');
 console.info('***********************************');
 
-// build the alerts from config
 var WebHookAlert = require('./alert/web-hook');
-var alerts = [];
-config.alerts.forEach(function(alertConfig) {
-    if (alertConfig.enabled !== false) {
-        console.log('creating alert:', alertConfig.name, alertConfig.type);
-        // create the monitor with this config
-        var alert = null;
-        switch(alertConfig.type) {
-            case 'webhook':
-            default:
-                alert = new WebHookAlert(alertConfig);
-            break;
-        }
-        alerts[alertConfig.name] = alert;
-    }
-});
-
-// browse monitors from config
 var PingMonitor = require('./monitor/ping');
-config.monitors.forEach(function(monitorConfig) {
-    if (monitorConfig.enabled !== false) {
-        console.log('creating monitor:', monitorConfig.name, monitorConfig.type);
-        // create the monitor with this config
-        var monitor = null;
-        switch(monitorConfig.type) {
-            case 'ping':
-            default:
-                monitor = new PingMonitor(monitorConfig, config.timeout, config.interval, config.attempts);
-            break;
-        }
-        monitor
-            .on('success', function(statusCode) {
-                console.log('** Monitor',  monitorConfig.name, monitorConfig.type, 'is up', statusCode);
-                if(monitorConfig.alerts) {
-                    monitorConfig.alerts.forEach(function(alertId) {
-                        console.log('alert', alertId);
-                        if (alerts[alertId]) {
-                            monitorConfig.status = statusCode;
-                            alerts[alertId].send(
-                                resolveTemplate(alerts[alertId].config['up_title'], monitorConfig),
-                                resolveTemplate(alerts[alertId].config['up_details'], monitorConfig),
-                                resolveTemplate(alerts[alertId].config['up_details_no_html'], monitorConfig)
-                            );
-                        }
-                    });
-                }
-            })
-            .on('error', function(err) {
-                console.error('** Monitor',  monitorConfig.name, monitorConfig.type, 'is down -', err);
-                if(monitorConfig.alerts) {
-                    monitorConfig.alerts.forEach(function(alertId) {
-                        console.log('alert', alertId);
-                        if (alerts[alertId]) {
-                            monitorConfig.status = err.toString();
-                            alerts[alertId].send(
-                                resolveTemplate(alerts[alertId].config['down_title'], monitorConfig),
-                                resolveTemplate(alerts[alertId].config['down_details'], monitorConfig),
-                                resolveTemplate(alerts[alertId].config['down_details_no_html'], monitorConfig)
-                            );
-                        }
-                    });
-                }
-            });
-        monitor.start();
-    }
+var monitor = new PingMonitor(config.timeout, config.interval, config.attempts);
+// loop on data
+var DataManager = require('./queue/data-manager');
+var dataManager = new DataManager();
+dataManager.unlockAll(function(err, result) {
+  nextLoop();
 });
+var currentData = null;
 
-// utility function
-function resolveTemplate(str, obj) {
-    var res = str;
-    for(var idx in obj) {
-        var reg = new RegExp('{{' + idx + '}}', 'g');
-        res = res.replace(reg, obj[idx]);
-    }
-    res = res.replace(/{{date}}/g, (new Date()).toString());
-    res = res.replace(/{{env}}/g, process.env.MT_ENV);
-    return res;
+
+function nextLoop() {
+    dataManager.lockNext(function(err, result) {
+        if(result) {
+            // no data in the DB
+            console.log('lockNext => ', err, result._id);
+            currentData = result;
+            monitor.poll(currentData.url);
+        }
+        else {
+            console.log('no confirmed items found in the db');
+            setTimeout(nextLoop, 100);
+        }
+    });
 }
 
+monitor
+    .on('success', function(statusCode) {
+        //console.log('** Monitor',  currentData, 'is up', statusCode);
+        dataManager.unlock(currentData, function(err, result) {
+            console.log('unlock => ', err, result._id);
+            nextLoop();
+        });
+    })
+    .on('error', function(err) {
+        //console.error('** Monitor',  currentData, 'is down -', err);
+        dataManager.unlock(currentData, function(err, result) {
+            console.log('unlock => ', err, result._id);
+            nextLoop();
+        });
+    });
+
 // API
-app.get('/isup/', function(res, res) {
-    res.send('{"success": true}')
+app.use(bodyParser.json()); // for parsing application/json
+app.use(bodyParser.urlencoded({ extended: true })); // for parsing application/x-www-form-urlencoded
+app.post('/item', function(req, res) {
+    var data = JSON.parse(req.body.data || req.body);
+    console.log('Route:: add item', typeof data, data);
+    dataManager.add(data, function(err, data) {
+      if(err) {
+        res.json({"success": false, "message": err.message });
+      }
+      else {
+        res.json({"success": true});
+      }
+    });
+});
+app.get('/item/:id/confirm', function(req, res) {
+    console.log('Route:: confirm item', req.params.id);
+    dataManager.enable(require('mongodb').ObjectID(req.params.id), function(err) {
+      console.log('enabled');
+      if(err) {
+        res.json({"success": false, "message": err.message });
+      }
+      else {
+        res.json({"success": true});
+      }
+    });
 });
 // app.get('/isup/:idx', require('./routes/isup.js'));
 
