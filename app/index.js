@@ -69,16 +69,18 @@ monitor
 // API
 app.use(bodyParser.json()); // for parsing application/json
 app.use(bodyParser.urlencoded({ extended: true })); // for parsing application/x-www-form-urlencoded
-app.get('/monitor', function(req, res) {
-  dataManager.list(function(err, dataArr) {
-    if(err) {
-      res.json({"success": false, "message": err.message });
-    }
-    else {
-      res.json({"success": true, "items": dataArr});
-    }
+if(process.env.MONITOSHI_DEBUG) {
+  app.get('/monitor', function(req, res) {
+    dataManager.list(function(err, dataArr) {
+      if(err) {
+        res.json({"success": false, "message": err.message });
+      }
+      else {
+        res.json({"success": true, "items": dataArr});
+      }
+    });
   });
-});
+}
 app.post('/monitor', function(req, res) {
     var data = {
       email: req.body.email,

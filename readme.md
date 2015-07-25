@@ -6,11 +6,11 @@ Create monitors to ping URLs and send alerts when it is down.
 
 Routes
 
-* GET /monitor => debug only, displays all monitors
 * POST /monitor => add a monitor
 * GET /monitor/:id/enable => enable a monitor, has to be called after a new monitor is added
 * GET /monitor/:id/disable => disable a monitor, for tests
 * GET /monitor/:id/del => remove a monitor, for tests
+* GET /monitor => debug only (when te env var `MONITOSHI_DEBUG` is defined), displays all monitors
 
 ## How to install
 
@@ -51,14 +51,13 @@ export MT_CONFIG_FILE=/home/lexoyo/ownCloud/Projects/Monitoshi/config.js
 
 
 back
-- Router
-- check if exist before add
-- suppr les vieux item non confirmés
 - list only in debug mode
+- cleanup index.html, create Router, use email aert...
 - front end
 - no more json, templates instead
-- all
+- check if exist before add
 - webhook?
+- suppr les vieux item non confirmés
 
 
   Juste un formulaire avec
