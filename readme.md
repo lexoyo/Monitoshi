@@ -10,7 +10,9 @@ Routes
 * GET /monitor/:id/enable => enable a monitor, has to be called after a new monitor is added
 * GET /monitor/:id/disable => disable a monitor, for tests
 * GET /monitor/:id/del => remove a monitor, for tests
-* GET /monitor => debug only (when te env var `MONITOSHI_DEBUG` is defined), displays all monitors
+* GET /monitor => debug only (when the env var `MONITOSHI_DEBUG` is defined), displays all monitors
+
+You can add `&format=json` to the requests in order to have JSON instead of HTML messages as a response.
 
 ## How to install
 
@@ -51,7 +53,6 @@ export MT_CONFIG_FILE=/home/lexoyo/ownCloud/Projects/Monitoshi/config.js
 
 
 back
-- list only in debug mode
 - cleanup index.html, create Router, use email aert...
 - front end
 - no more json, templates instead

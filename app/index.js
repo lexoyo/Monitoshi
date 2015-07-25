@@ -16,6 +16,22 @@ else {
         process.env.MT_CONFIG_FILE,
         'The config will be read from', configFile);
 }
+function displayResult(req, res, data) {
+  if(req.query.format === 'json') {
+    if(data.success === true) res.status(200);
+    else res.status(500);
+    res.json(data);
+  }
+  else {
+    if(data.success === true) {
+      res.status(200).send(data.message || data.items || 'Success, thank you for using Monitoshi by lexoyo');
+    }
+    else {
+      res.status(500).send('<h1>' + (data.message || '') + '</h1><hr>Something went wrong, we are sorry about that. Here is <a href="https://github.com/lexoyo/Monitoshi/issues">the help section of Monitoshi</a>.');
+    }
+  }
+}
+
 console.info('***********************************');
 console.info('Monitoshi starting');
 console.info('***********************************');
@@ -23,6 +39,7 @@ console.info('***********************************');
 var WebHookAlert = require('./alert/web-hook');
 var PingMonitor = require('./monitor/ping');
 var monitor = new PingMonitor(config.timeout, config.interval, config.attempts);
+
 // loop on data
 var DataManager = require('./queue/data-manager');
 var dataManager = new DataManager(nextLoop);
@@ -73,10 +90,10 @@ if(process.env.MONITOSHI_DEBUG) {
   app.get('/monitor', function(req, res) {
     dataManager.list(function(err, dataArr) {
       if(err) {
-        res.json({"success": false, "message": err.message });
+        displayResult(req, res, {"success": false, "message": err.message });
       }
       else {
-        res.json({"success": true, "items": dataArr});
+        displayResult(req, res, {"success": true, "items": dataArr});
       }
     });
   });
@@ -90,15 +107,15 @@ app.post('/monitor', function(req, res) {
     console.log('Route:: add monitor', typeof data, data);
     dataManager.add(data, function(err, data) {
       if(err) {
-          res.json({"success": false, "message": err.message });
+          displayResult(req, res, {"success": false, "message": err.message });
       }
       else {
           if(data) {
               sendConfirmationEmail(req.protocol + '://' + req.get('host'), data._id, data.email, data.url);
-              res.json({"success": true});
+              displayResult(req, res, {"success": true});
           }
           else {
-              res.json({"success": false, "message": "monitor not found" });
+              displayResult(req, res, {"success": false, "message": "monitor not found" });
           }
       }
     });
@@ -108,15 +125,15 @@ app.get('/monitor/:id/enable', function(req, res) {
     dataManager.enable(req.params.id, function(err, data) {
       console.log('enabled', err);
       if(err) {
-          res.json({"success": false, "message": err.message });
+          displayResult(req, res, {"success": false, "message": err.message });
       }
       else {
           if(data) {
             sendStartEmail(req.protocol + '://' + req.get('host'), data._id, data.email, data.url);
-            res.json({"success": true});
+            displayResult(req, res, {"success": true});
           }
           else {
-              res.json({"success": false, "message": "monitor not found" });
+              displayResult(req, res, {"success": false, "message": "monitor not found" });
           }
       }
     });
@@ -126,10 +143,10 @@ app.get('/monitor/:id/disable', function(req, res) {
     dataManager.disable(req.params.id, function(err) {
       console.log('disabled', err);
       if(err) {
-        res.json({"success": false, "message": err.message });
+        displayResult(req, res, {"success": false, "message": err.message });
       }
       else {
-        res.json({"success": true});
+        displayResult(req, res, {"success": true});
       }
     });
 });
@@ -138,15 +155,15 @@ app.get('/monitor/:id/del', function(req, res) {
     dataManager.del(req.params.id, function(err, data) {
       console.log('del', err, data);
       if(err) {
-        res.json({"success": false, "message": err.message });
+        displayResult(req, res, {"success": false, "message": err.message });
       }
       else {
         if(data) {
             sendStopEmail(req.protocol + '://' + req.get('host'), data._id, data.email, data.url);
-            res.json({"success": true});
+            displayResult(req, res, {"success": true});
         }
         else {
-            res.json({"success": false, "message": "monitor not found" });
+            displayResult(req, res, {"success": false, "message": "monitor not found" });
         }
       }
     });
