@@ -36,7 +36,7 @@ function nextLoop() {
     dataManager.lockNext(function(err, result) {
         if(result) {
             // no data in the DB
-            console.log('lockNext => ', err, result._id);
+            console.log('lockNext => ', err, result._id, result.url);
             currentData = result;
             monitor.poll(currentData.url);
         }
@@ -51,14 +51,14 @@ monitor
     .on('success', function(statusCode) {
         //console.log('** Monitor',  currentData, 'is up', statusCode);
         dataManager.unlock(currentData, function(err, result) {
-            console.log('unlock => ', err, result._id);
+            console.log('unlock => ', err, result._id, result.url);
             nextLoop();
         });
     })
     .on('error', function(err) {
         //console.error('** Monitor',  currentData, 'is down -', err);
         dataManager.unlock(currentData, function(err, result) {
-            console.log('unlock => ', err, result._id);
+            console.log('unlock => ', err, result._id, result.url);
             nextLoop();
         });
     });
@@ -66,9 +66,19 @@ monitor
 // API
 app.use(bodyParser.json()); // for parsing application/json
 app.use(bodyParser.urlencoded({ extended: true })); // for parsing application/x-www-form-urlencoded
-app.post('/item', function(req, res) {
+app.get('/monitor', function(req, res) {
+  dataManager.list(function(err, dataArr) {
+    if(err) {
+      res.json({"success": false, "message": err.message });
+    }
+    else {
+      res.json({"success": true, "items": dataArr});
+    }
+  });
+});
+app.post('/monitor', function(req, res) {
     var data = JSON.parse(req.body.data || req.body);
-    console.log('Route:: add item', typeof data, data);
+    console.log('Route:: add monitor', typeof data, data);
     dataManager.add(data, function(err, data) {
       if(err) {
         res.json({"success": false, "message": err.message });
@@ -78,10 +88,10 @@ app.post('/item', function(req, res) {
       }
     });
 });
-app.get('/item/:id/confirm', function(req, res) {
-    console.log('Route:: confirm item', req.params.id);
-    dataManager.enable(require('mongodb').ObjectID(req.params.id), function(err) {
-      console.log('enabled');
+app.get('/monitor/:id/enable', function(req, res) {
+    console.log('Route:: enable monitor', req.params.id);
+    dataManager.enable({_id:require('mongodb').ObjectID(req.params.id)}, function(err) {
+      console.log('enabled', err);
       if(err) {
         res.json({"success": false, "message": err.message });
       }
@@ -90,7 +100,30 @@ app.get('/item/:id/confirm', function(req, res) {
       }
     });
 });
-// app.get('/isup/:idx', require('./routes/isup.js'));
+app.get('/monitor/:id/disable', function(req, res) {
+    console.log('Route:: enable monitor', req.params.id);
+    dataManager.disable({_id:require('mongodb').ObjectID(req.params.id)}, function(err) {
+      console.log('disabled', err);
+      if(err) {
+        res.json({"success": false, "message": err.message });
+      }
+      else {
+        res.json({"success": true});
+      }
+    });
+});
+app.get('/monitor/:id/del', function(req, res) {
+    console.log('Route:: del monitor', req.params.id);
+    dataManager.del({_id:require('mongodb').ObjectID(req.params.id)}, function(err, results) {
+      console.log('del', err, results);
+      if(err) {
+        res.json({"success": false, "message": err.message });
+      }
+      else {
+        res.json({"success": true});
+      }
+    });
+});
 
 // public folder
 app.use('/', express.static(__dirname + '/../public'));

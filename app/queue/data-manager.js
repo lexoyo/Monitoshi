@@ -57,7 +57,6 @@ DataManager.prototype.lockNext = function(cbk) {
         },
         {new: true},
       function(err, result) {
-        console.log('lockNext', result);
         cbk(err, result.value);
         done();
       });
@@ -153,6 +152,35 @@ DataManager.prototype.enable = function(data, cbk) {
 
 
 /**
+ * disable a data for processing
+ * @param {object} data
+ * @param {function(err:String)} cbk
+ */
+DataManager.prototype.disable = function(data, cbk) {
+  this.getCollection(function(err, collection, done) {
+    if(err) {
+      cbk(err, result);
+      done();
+    }
+    else {
+      collection.findAndModify(
+        data, [], {
+          $set: {
+            __enabled: false
+          }
+        },
+        {new: true},
+      function(err, result) {
+        console.log('disable result:', err, result);
+        cbk(err);
+        done();
+      });
+    }
+  });
+};
+
+
+/**
  * add a data item
  * @param {object} data
  * @param {function(err:String)} cbk
@@ -160,20 +188,18 @@ DataManager.prototype.enable = function(data, cbk) {
 DataManager.prototype.add = function(data, cbk) {
   //     => collection.update(selector, document, { upsert: true });
   //     => with flag __enabled = false
-  this.db.open(function(err, db) {
-    db.collection(collectionName, function(err, collection) {
-        if(err) {
-        cbk(err, collection);
-        db.close();
-      }
-      else {
-        data.__enabled = false,
-        data.__lockedBy = '';
-        collection.insert([data], function(err, docs) {
-          cbk(err, data);
-        });
-      }
-    });
+  this.getCollection(function(err, collection, done) {
+    if(err) {
+      cbk(err, result);
+      done();
+    }
+    else {
+      data.__enabled = false,
+      data.__lockedBy = '';
+      collection.insert([data], function(err, docs) {
+        cbk(err, data);
+      });
+    }
   });
 };
 
@@ -182,10 +208,39 @@ DataManager.prototype.add = function(data, cbk) {
  * remove a data item
  * @param {object} data
  * @param {function(err:String)} cbk
- *
-DataManager.prototype.remove = function(data, cbk) {
-  this.db.findOneAndRemove(data, function (err) {
-    cbk(err);
+ */
+DataManager.prototype.del = function(data, cbk) {
+  this.getCollection(function(err, collection, done) {
+    if(err) {
+      cbk(err, result);
+      done();
+    }
+    else {
+      collection.remove(data, function(err, docs) {
+        cbk(err, data);
+      });
+    }
   });
 };
 /* */
+
+
+/**
+ * dump the db
+ * @param {object} data
+ * @param {function(err:String)} cbk
+ */
+DataManager.prototype.list = function(cbk) {
+  this.getCollection(function(err, collection, done) {
+    if(err) {
+      cbk(err, result);
+      done();
+    }
+    else {
+      collection.find().toArray(function(err, items) {
+        cbk(err, items);
+        done();
+      });
+    }
+  });
+};
