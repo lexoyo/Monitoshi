@@ -1,7 +1,7 @@
 // includes
 var Db = require('mongodb').Db,
+  ObjectID = require('mongodb').ObjectID,
   Server = require('mongodb').Server;
-
 // config
 var host = process.env['MONGO_NODE_DRIVER_HOST'] != null ? process.env['MONGO_NODE_DRIVER_HOST'] : 'localhost';
 var port = process.env['MONGO_NODE_DRIVER_PORT'] != null ? process.env['MONGO_NODE_DRIVER_PORT'] : 27017;
@@ -52,7 +52,7 @@ DataManager.prototype.lockNext = function(cbk) {
 
 /**
 * unlock the data after process, update the __lastProcessed date
-* @param {object} data
+* @param {string} id
 * @param {function(err:String)} cbk
 */
 DataManager.prototype.unlock = function(data, changes, cbk) {
@@ -90,10 +90,11 @@ DataManager.prototype.unlockAll = function(cbk) {
 
 /**
 * enable a data for processing
-* @param {object} data
+* @param {string} id
 * @param {function(err:String)} cbk
 */
-DataManager.prototype.enable = function(data, cbk) {
+DataManager.prototype.enable = function(id, cbk) {
+  var data = {_id:ObjectID(id)};
  this.collection.findAndModify(
     data, [], {
       $set: {
@@ -110,10 +111,11 @@ DataManager.prototype.enable = function(data, cbk) {
 
 /**
 * disable a data for processing
-* @param {object} data
+* @param {string} id
 * @param {function(err:String)} cbk
 */
-DataManager.prototype.disable = function(data, cbk) {
+DataManager.prototype.disable = function(id, cbk) {
+  var data = {_id:ObjectID(id)};
  this.collection.findAndModify(
     data, [], {
       $set: {
@@ -146,10 +148,11 @@ DataManager.prototype.add = function(data, cbk) {
 
 /**
 * remove a data item
-* @param {object} data
+* @param {string} id
 * @param {function(err:String)} cbk
 */
-DataManager.prototype.del = function(data, cbk) {
+DataManager.prototype.del = function(id, cbk) {
+  var data = {_id:ObjectID(id)};
  this.collection.findOne(function(err, data) {
       if(err) {
           cbk(err, data);
@@ -164,7 +167,6 @@ DataManager.prototype.del = function(data, cbk) {
 
 /**
 * dump the db
-* @param {object} data
 * @param {function(err:String)} cbk
 */
 DataManager.prototype.list = function(cbk) {

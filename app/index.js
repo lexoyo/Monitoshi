@@ -103,7 +103,7 @@ app.post('/monitor', function(req, res) {
 });
 app.get('/monitor/:id/enable', function(req, res) {
     console.log('Route:: enable monitor', req.params.id);
-    dataManager.enable({_id:require('mongodb').ObjectID(req.params.id)}, function(err, data) {
+    dataManager.enable(req.params.id, function(err, data) {
       console.log('enabled', err);
       if(err) {
           res.json({"success": false, "message": err.message });
@@ -121,7 +121,7 @@ app.get('/monitor/:id/enable', function(req, res) {
 });
 app.get('/monitor/:id/disable', function(req, res) {
     console.log('Route:: enable monitor', req.params.id);
-    dataManager.disable({_id:require('mongodb').ObjectID(req.params.id)}, function(err) {
+    dataManager.disable(req.params.id, function(err) {
       console.log('disabled', err);
       if(err) {
         res.json({"success": false, "message": err.message });
@@ -133,7 +133,7 @@ app.get('/monitor/:id/disable', function(req, res) {
 });
 app.get('/monitor/:id/del', function(req, res) {
     console.log('Route:: del monitor', req.params.id);
-    dataManager.del({_id:require('mongodb').ObjectID(req.params.id)}, function(err, data) {
+    dataManager.del(req.params.id, function(err, data) {
       console.log('del', err, data);
       if(err) {
         res.json({"success": false, "message": err.message });

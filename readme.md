@@ -52,7 +52,6 @@ export MT_CONFIG_FILE=/home/lexoyo/ownCloud/Projects/Monitoshi/config.js
 
 back
 - Router
-- del and enable take id instead of data
 - check if exist before add
 - suppr les vieux item non confirmés
 - list only in debug mode
