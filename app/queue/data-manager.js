@@ -27,11 +27,13 @@ module.exports = DataManager = function() {
  */
 DataManager.prototype.getCollection = function(cbk) {
   this.db.open(function(err, db) {
-    db.collection(collectionName, function(err, collection) {
-      cbk(err, collection, function() {
-        db.close();
+    if(db) {
+      db.collection(collectionName, function(err, collection) {
+        cbk(err, collection, function() {
+          db.close();
+        });
       });
-    });
+    }
   });
 };
 
@@ -70,7 +72,7 @@ DataManager.prototype.lockNext = function(cbk) {
  * @param {object} data
  * @param {function(err:String)} cbk
  */
-DataManager.prototype.unlock = function(data, cbk) {
+DataManager.prototype.unlock = function(data, changes, cbk) {
   // update __lastProcessed + set flag __lockedBy=''
   this.getCollection(function(err, collection, done) {
     if(err) {
@@ -78,12 +80,11 @@ DataManager.prototype.unlock = function(data, cbk) {
       done();
     }
     else {
+      changes.__lockedBy = '';
+      changes.__lastProcessed = Date.now();
       collection.findAndModify(
         data, [], {
-          $set: {
-            __lockedBy: '',
-            __lastProcessed: Date.now()
-          }
+          $set: changes
         },
         {new: true},
       function(err, result) {

@@ -26,42 +26,47 @@ var monitor = new PingMonitor(config.timeout, config.interval, config.attempts);
 // loop on data
 var DataManager = require('./queue/data-manager');
 var dataManager = new DataManager();
-dataManager.unlockAll(function(err, result) {
-  nextLoop();
-});
 var currentData = null;
 
 
 function nextLoop() {
-    dataManager.lockNext(function(err, result) {
-        if(result) {
-            // no data in the DB
-            console.log('lockNext => ', err, result._id, result.url);
-            currentData = result;
-            monitor.poll(currentData.url);
-        }
-        else {
-            console.log('no confirmed items found in the db');
-            setTimeout(nextLoop, 100);
-        }
+    dataManager.unlockAll(function(err, result) {
+        dataManager.lockNext(function(err, result) {
+            if(result) {
+                // no data in the DB
+                console.log('lockNext => ', err, result._id, result.url);
+                currentData = result;
+                monitor.poll(currentData.url);
+            }
+            else {
+                console.log('no confirmed items found in the db');
+                setTimeout(nextLoop, 100);
+            }
+        });
     });
 }
-
 monitor
-    .on('success', function(statusCode) {
-        //console.log('** Monitor',  currentData, 'is up', statusCode);
-        dataManager.unlock(currentData, function(err, result) {
-            console.log('unlock => ', err, result ? result._id : null, result ? result.url : null);
-            nextLoop();
-        });
-    })
-    .on('error', function(err) {
-        //console.error('** Monitor',  currentData, 'is down -', err);
-        dataManager.unlock(currentData, function(err, result) {
-            console.log('unlock => ', err, result._id, result.url);
-            nextLoop();
-        });
+.on('success', function(statusCode) {
+    console.log('** Monitor',  currentData, 'is up', statusCode);
+    if(currentData.state === 'down') {
+        sendUpEmail(currentData);
+    }
+    dataManager.unlock(currentData, {state: 'up'}, function(err, result) {
+        //console.log('unlock => ', err, result ? result._id : null, result ? result.url : null);
+        nextLoop();
     });
+})
+.on('error', function(err) {
+    console.error('** Monitor',  currentData, 'is down -', err);
+    if(currentData.state === 'up') {
+        sendDownEmail(currentData);
+    }
+    dataManager.unlock(currentData, {state: 'down'}, function(err, result) {
+        nextLoop();
+    });
+});
+
+nextLoop();
 
 // API
 app.use(bodyParser.json()); // for parsing application/json
@@ -79,7 +84,8 @@ app.get('/monitor', function(req, res) {
 app.post('/monitor', function(req, res) {
     var data = {
       email: req.body.email,
-      url: req.body.url
+      url: req.body.url,
+      serverUrl: req.protocol + '://' + req.get('host')
     };
     console.log('Route:: add monitor', typeof data, data);
     dataManager.add(data, function(err, data) {
@@ -190,5 +196,25 @@ function sendStopEmail(serverUrl, id, email, url) {
         to: email,
         subject: 'Monitor Deleted',
         text: 'This is an email to confirm the deletion of a monitor. Monitoshi will not warn you anymore when ' + url + ' is down.'
+    });
+}
+function sendDownEmail(data) {
+    var callbackUrl = data.serverUrl + '/monitor/' + data._id + '/del';
+    console.log('sendDownEmail', data.email, data.url);
+    transporter.sendMail({
+        from: config.nodemailer.auth.user,
+        to: data.email,
+        subject: '[Alert]Your website is DOWN',
+        text: 'This is an email to warn you that ' + data.url + ' is down.\nIf you want me to stop monitoring this website, follow this link: ' + callbackUrl
+    });
+}
+function sendUpEmail(data) {
+    var callbackUrl = data.serverUrl + '/monitor/' + data._id + '/del';
+    console.log('sendUpEmail', data.email, data.url);
+    transporter.sendMail({
+        from: config.nodemailer.auth.user,
+        to: data.email,
+        subject: '[Alert]Your website is UP',
+        text: 'This is an email to inform you that ' + data.url + ' is up again.\nIf you want me to stop monitoring this website, follow this link: ' + callbackUrl
     });
 }
