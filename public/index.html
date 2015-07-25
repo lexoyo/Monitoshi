@@ -4,13 +4,13 @@
   <title>test</title>
 </head>
 <body>
+    <h1>Monitoshi</h1>
+    <p>
+        Add a monitor to be notified by email when the website is down.
+    </p>
     <form action="/monitor" method="POST">
-        <textarea name="data" cols="30" rows="30">
-{
-    "email": "test@test.com",
-    "url": "http://lexoyo.me"
-}
-        </textarea>
+        <input type="email" name="email" placeholder="you@mail.com">
+        <input type="url" name="url" placeholder="http://your-site.com">
         <button type="submit">OK</button>
     </form>
 </body>

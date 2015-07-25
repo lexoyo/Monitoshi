@@ -77,7 +77,10 @@ app.get('/monitor', function(req, res) {
   });
 });
 app.post('/monitor', function(req, res) {
-    var data = JSON.parse(req.body.data || req.body);
+    var data = {
+      email: req.body.email,
+      url: req.body.url
+    };
     console.log('Route:: add monitor', typeof data, data);
     dataManager.add(data, function(err, data) {
       if(err) {
