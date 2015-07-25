@@ -47,10 +47,11 @@ license: GPL v2
 
 ## todo
 
-links
+export MT_CONFIG_FILE=/home/lexoyo/ownCloud/Projects/Monitoshi/config.js
+
 
 back
-- envoi de mails confirmation
+- envoi de mails confirmation (new url, new url confirmed / start monitoring, removed url)
 - store state
 - alerts (email, webhook)
 - 1 seule connection, ne pas reconnect a chaque fois
@@ -59,6 +60,7 @@ back
 - check if exist before add
 - suppr les vieux item non confirmés
 - list only in debug mode
+- front end
 
 
   Juste un formulaire avec

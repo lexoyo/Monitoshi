@@ -84,6 +84,7 @@ app.post('/monitor', function(req, res) {
         res.json({"success": false, "message": err.message });
       }
       else {
+        sendConfirmationEmail(req.protocol + '://' + req.get('host'), data._id, data.email, data.url);
         res.json({"success": true});
       }
     });
@@ -137,4 +138,18 @@ if (!module.parent) {
 }
 else {
     console.log('do not listen to any port since there is a parent app');
+}
+
+// confirmation emails
+var nodemailer = require('nodemailer');
+var transporter = nodemailer.createTransport(config.nodemailer);
+function sendConfirmationEmail(serverUrl, id, email, url) {
+    var callbackUrl = serverUrl + '/monitor/' + id + '/enable';
+    console.log('sendConfirmationEmail', callbackUrl, email, url);
+    transporter.sendMail({
+        from: config.nodemailer.auth.user,
+        to: email,
+        subject: 'Confirm Monitor Creation',
+        text: 'Please follow this link to confirm that you wish Monitoshi to warn you by email when ' + url + ' is down.\n' + callbackUrl
+    });
 }
