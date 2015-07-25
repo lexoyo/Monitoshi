@@ -24,7 +24,7 @@ function displayResult(req, res, data) {
   }
   else {
     if(data.success === true) {
-      res.status(200).send(data.message || data.items || 'Success, thank you for using Monitoshi by lexoyo');
+      res.status(200).send('<h1>' + (data.message || data.items) + '</h1><hr>Thank you for using <a href="https://github.com/lexoyo/Monitoshi/">Monitoshi</a>');
     }
     else {
       res.status(500).send('<h1>' + (data.message || '') + '</h1><hr>Something went wrong, we are sorry about that. Here is <a href="https://github.com/lexoyo/Monitoshi/issues">the help section of Monitoshi</a>.');
@@ -112,10 +112,10 @@ app.post('/monitor', function(req, res) {
       else {
           if(data) {
               sendConfirmationEmail(req.protocol + '://' + req.get('host'), data._id, data.email, data.url);
-              displayResult(req, res, {"success": true});
+              displayResult(req, res, {"success": true, "message": "The monitor is created, please check your emails and activate it."});
           }
           else {
-              displayResult(req, res, {"success": false, "message": "monitor not found" });
+              displayResult(req, res, {"success": false, "message": "Monitor not found." });
           }
       }
     });
@@ -130,10 +130,10 @@ app.get('/monitor/:id/enable', function(req, res) {
       else {
           if(data) {
             sendStartEmail(req.protocol + '://' + req.get('host'), data._id, data.email, data.url);
-            displayResult(req, res, {"success": true});
+            displayResult(req, res, {"success": true, "message": "The monitor is now active."});
           }
           else {
-              displayResult(req, res, {"success": false, "message": "monitor not found" });
+              displayResult(req, res, {"success": false, "message": "Monitor not found." });
           }
       }
     });
@@ -146,7 +146,7 @@ app.get('/monitor/:id/disable', function(req, res) {
         displayResult(req, res, {"success": false, "message": err.message });
       }
       else {
-        displayResult(req, res, {"success": true});
+        displayResult(req, res, {"success": true, "message": "The monitor has been disabled."});
       }
     });
 });
@@ -160,10 +160,10 @@ app.get('/monitor/:id/del', function(req, res) {
       else {
         if(data) {
             sendStopEmail(req.protocol + '://' + req.get('host'), data._id, data.email, data.url);
-            displayResult(req, res, {"success": true});
+            displayResult(req, res, {"success": true, "message": "The monitor has been deleted."});
         }
         else {
-            displayResult(req, res, {"success": false, "message": "monitor not found" });
+            displayResult(req, res, {"success": false, "message": "Monitor not found." });
         }
       }
     });

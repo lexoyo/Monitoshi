@@ -54,8 +54,6 @@ export MT_CONFIG_FILE=/home/lexoyo/ownCloud/Projects/Monitoshi/config.js
 
 back
 - cleanup index.html, create Router, use email aert...
-- front end
-- no more json, templates instead
 - check if exist before add
 - webhook?
 - suppr les vieux item non confirmés
