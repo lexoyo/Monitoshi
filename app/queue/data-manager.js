@@ -57,7 +57,7 @@ DataManager.prototype.lockNext = function(cbk) {
         },
         {new: true},
       function(err, result) {
-        cbk(err, result.value);
+        cbk(err, result ? result.value : null);
         done();
       });
     }
@@ -87,7 +87,7 @@ DataManager.prototype.unlock = function(data, cbk) {
         },
         {new: true},
       function(err, result) {
-        cbk(err, result.value);
+        cbk(err, result ? result.value : null);
         done();
       });
     }
@@ -114,7 +114,7 @@ DataManager.prototype.unlockAll = function(cbk) {
         },
         {multi: true},
       function(err, result) {
-        cbk(err, result);
+        cbk(err, result ? result.value : null);
         done();
       });
     }
@@ -143,7 +143,7 @@ DataManager.prototype.enable = function(data, cbk) {
         {new: true},
       function(err, result) {
         console.log('enable result:', err, result);
-        cbk(err);
+        cbk(err, result ? result.value : null);
         done();
       });
     }
@@ -172,7 +172,7 @@ DataManager.prototype.disable = function(data, cbk) {
         {new: true},
       function(err, result) {
         console.log('disable result:', err, result);
-        cbk(err);
+        cbk(err, result ? result.value : null);
         done();
       });
     }
@@ -216,8 +216,16 @@ DataManager.prototype.del = function(data, cbk) {
       done();
     }
     else {
-      collection.remove(data, function(err, docs) {
-        cbk(err, data);
+      collection.findOne(function(err, data) {
+          if(err) {
+              cbk(err, data);
+              done();
+          }
+          else collection.remove(data, function(err, removed) {
+              console.log('xxxx', err, err, data)
+              cbk(err, data);
+              done();
+          });
       });
     }
   });

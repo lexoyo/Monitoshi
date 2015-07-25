@@ -51,7 +51,7 @@ monitor
     .on('success', function(statusCode) {
         //console.log('** Monitor',  currentData, 'is up', statusCode);
         dataManager.unlock(currentData, function(err, result) {
-            console.log('unlock => ', err, result._id, result.url);
+            console.log('unlock => ', err, result ? result._id : null, result ? result.url : null);
             nextLoop();
         });
     })
@@ -84,23 +84,34 @@ app.post('/monitor', function(req, res) {
     console.log('Route:: add monitor', typeof data, data);
     dataManager.add(data, function(err, data) {
       if(err) {
-        res.json({"success": false, "message": err.message });
+          res.json({"success": false, "message": err.message });
       }
       else {
-        sendConfirmationEmail(req.protocol + '://' + req.get('host'), data._id, data.email, data.url);
-        res.json({"success": true});
+          if(data) {
+              sendConfirmationEmail(req.protocol + '://' + req.get('host'), data._id, data.email, data.url);
+              res.json({"success": true});
+          }
+          else {
+              res.json({"success": false, "message": "monitor not found" });
+          }
       }
     });
 });
 app.get('/monitor/:id/enable', function(req, res) {
     console.log('Route:: enable monitor', req.params.id);
-    dataManager.enable({_id:require('mongodb').ObjectID(req.params.id)}, function(err) {
+    dataManager.enable({_id:require('mongodb').ObjectID(req.params.id)}, function(err, data) {
       console.log('enabled', err);
       if(err) {
-        res.json({"success": false, "message": err.message });
+          res.json({"success": false, "message": err.message });
       }
       else {
-        res.json({"success": true});
+          if(data) {
+            sendStartEmail(req.protocol + '://' + req.get('host'), data._id, data.email, data.url);
+            res.json({"success": true});
+          }
+          else {
+              res.json({"success": false, "message": "monitor not found" });
+          }
       }
     });
 });
@@ -118,13 +129,19 @@ app.get('/monitor/:id/disable', function(req, res) {
 });
 app.get('/monitor/:id/del', function(req, res) {
     console.log('Route:: del monitor', req.params.id);
-    dataManager.del({_id:require('mongodb').ObjectID(req.params.id)}, function(err, results) {
-      console.log('del', err, results);
+    dataManager.del({_id:require('mongodb').ObjectID(req.params.id)}, function(err, data) {
+      console.log('del', err, data);
       if(err) {
         res.json({"success": false, "message": err.message });
       }
       else {
-        res.json({"success": true});
+        if(data) {
+            sendStopEmail(req.protocol + '://' + req.get('host'), data._id, data.email, data.url);
+            res.json({"success": true});
+        }
+        else {
+            res.json({"success": false, "message": "monitor not found" });
+        }
       }
     });
 });
@@ -152,7 +169,26 @@ function sendConfirmationEmail(serverUrl, id, email, url) {
     transporter.sendMail({
         from: config.nodemailer.auth.user,
         to: email,
-        subject: 'Confirm Monitor Creation',
+        subject: 'Please confirm monitor creation',
         text: 'Please follow this link to confirm that you wish Monitoshi to warn you by email when ' + url + ' is down.\n' + callbackUrl
+    });
+}
+function sendStartEmail(serverUrl, id, email, url) {
+    var callbackUrl = serverUrl + '/monitor/' + id + '/del';
+    console.log('sendStartEmail', callbackUrl, email, url);
+    transporter.sendMail({
+        from: config.nodemailer.auth.user,
+        to: email,
+        subject: 'Monitor Created',
+        text: 'This is an email to confirm that Monitoshi will warn you by email when ' + url + ' is down.\nIf you want TO DELETE it one day, and prevent Monitoshi to watch for this website, follow this link: ' + callbackUrl
+    });
+}
+function sendStopEmail(serverUrl, id, email, url) {
+    console.log('sendStopEmail', email, url);
+    transporter.sendMail({
+        from: config.nodemailer.auth.user,
+        to: email,
+        subject: 'Monitor Deleted',
+        text: 'This is an email to confirm the deletion of a monitor. Monitoshi will not warn you anymore when ' + url + ' is down.'
     });
 }

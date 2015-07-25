@@ -51,7 +51,6 @@ export MT_CONFIG_FILE=/home/lexoyo/ownCloud/Projects/Monitoshi/config.js
 
 
 back
-- envoi de mails confirmation (new url, new url confirmed / start monitoring, removed url)
 - store state
 - alerts (email, webhook)
 - 1 seule connection, ne pas reconnect a chaque fois
