@@ -25,7 +25,7 @@ var PingMonitor = require('./monitor/ping');
 var monitor = new PingMonitor(config.timeout, config.interval, config.attempts);
 // loop on data
 var DataManager = require('./queue/data-manager');
-var dataManager = new DataManager();
+var dataManager = new DataManager(nextLoop);
 var currentData = null;
 
 
@@ -65,8 +65,6 @@ monitor
         nextLoop();
     });
 });
-
-nextLoop();
 
 // API
 app.use(bodyParser.json()); // for parsing application/json
