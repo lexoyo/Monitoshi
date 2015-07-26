@@ -79,6 +79,8 @@ more features
 * captcha
 * webhook, ifttt ...
 * Trace route https://www.npmjs.com/package/traceroute
+* handle post requests, ftp ...
+* host instances in multiple locations
 
 ___
 

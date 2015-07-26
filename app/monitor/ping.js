@@ -1,6 +1,7 @@
 // imports
 var events = require('events');
 var http = require('http');
+var https = require('https');
 var util = require('util');
 
 /**
@@ -55,8 +56,10 @@ util.inherits(PingMonitor, events.EventEmitter);
 PingMonitor.prototype.poll = function(url, opt_failed) {
     var hasTimedout = false;
     var failed = opt_failed || 0;
+    // handle https as well as http
+    var service = url.indexOf('https') === 0 ? https : http;
     // do the request to get the website
-    var req = http.get(url, function(res) {
+    var req = service.get(url, function(res) {
         // abort, otherwise it emmits a socket timeout after the timeout is elapsed
         req.abort();
         // notify the listeners
