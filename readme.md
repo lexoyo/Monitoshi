@@ -8,6 +8,8 @@ I have [an instance online here](https://monitoshi.herokuapp.com/), feel free to
 
 More details on how it works: you submit an URL to Monitoshi, along with your email adress, to receive a confirmation link by email. Then Monitoshi will send emails when the URL goes down or up again. In the emails you also have a link to remove your URL and email from Monitoshi's list.
 
+[Roadmap is here](https://github.com/lexoyo/Monitoshi/issues/1) and [feature requests can be done here](https://github.com/lexoyo/Monitoshi/issues/).
+
 ## Routes
 
 You can use monitoshi as is, reaching the routes listed bellow with a web browser or use it as an API with `&format=json` at the end of the URLs in order to have JSON responses instead of HTML messages.
@@ -55,8 +57,15 @@ license: GPL v2
 
 ## Roadmap
 
+todo: move these ideas to https://github.com/lexoyo/Monitoshi/issues/1
+
 dev
 
+* /index.html has a title set to "test"
+* does not warn when http://01silex.com/tests/monitoshi/ goes down
+* !! /del deletes the wrong monitor
+  https://github.com/lexoyo/Monitoshi/issues/2
+* i should have the status (up/down) in the email to confirm a monitor started
 * cleanup index.js, create Router, use email aert...
 * check if exist before add
 * badge "http://...........com is UP"
