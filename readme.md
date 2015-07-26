@@ -2,17 +2,23 @@
 
 ## About
 
-Create monitors to ping URLs and send alerts when it is down.
+Ping URLs and send email alerts when it is down or goes up again.
 
-Routes
+I have [an instance online here](https://monitoshi.herokuapp.com/), feel free to use it - I use it myself to monitor my websites.
+
+More details on how it works: you submit an URL to Monitoshi, along with your email adress, to receive a confirmation link by email. Then Monitoshi will send emails when the URL goes down or up again. In the emails you also have a link to remove your URL and email from Monitoshi's list.
+
+## Routes
+
+You can use monitoshi as is, reaching the routes listed bellow with a web browser or use it as an API with `&format=json` at the end of the URLs in order to have JSON responses instead of HTML messages.
+
+Here are the app routes
 
 * POST /monitor => add a monitor
 * GET /monitor/:id/enable => enable a monitor, has to be called after a new monitor is added
 * GET /monitor/:id/disable => disable a monitor, for tests
 * GET /monitor/:id/del => remove a monitor, for tests
 * GET /monitor => debug only (when the env var `MONITOSHI_DEBUG` is defined), displays all monitors
-
-You can add `&format=json` to the requests in order to have JSON instead of HTML messages as a response.
 
 ## How to install
 
