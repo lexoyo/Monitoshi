@@ -55,10 +55,8 @@ util.inherits(PingMonitor, events.EventEmitter);
 PingMonitor.prototype.poll = function(url, opt_failed) {
     var hasTimedout = false;
     var failed = opt_failed || 0;
-    console.log('PingMonitor::poll', failed);
     // do the request to get the website
     var req = http.get(url, function(res) {
-        console.log('PingMonitor::poll get', res.statusCode);
         // abort, otherwise it emmits a socket timeout after the timeout is elapsed
         req.abort();
         // notify the listeners
@@ -75,7 +73,6 @@ PingMonitor.prototype.poll = function(url, opt_failed) {
         }
     }.bind(this))
     .on('error', function(e) {
-        console.log('PingMonitor::poll error', e);
         // just in case, to prevent fireing timeout
         req.abort();
         if(++failed >= this.attempts) {
@@ -94,7 +91,6 @@ PingMonitor.prototype.poll = function(url, opt_failed) {
     .on('socket', function (socket) {
         socket.setTimeout(this.timeout);
         socket.on('timeout', function() {
-            console.log('PingMonitor::poll socket timeout');
             hasTimedout = true;
             req.abort();
         }.bind(this));

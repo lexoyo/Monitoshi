@@ -1,29 +1,30 @@
 // includes
 var Db = require('mongodb').Db,
   ObjectID = require('mongodb').ObjectID,
-  Server = require('mongodb').Server;
+  MongoClient = require('mongodb').MongoClient;
 // config
-var host = process.env['MONGO_NODE_DRIVER_HOST'] != null ? process.env['MONGO_NODE_DRIVER_HOST'] : 'localhost';
-var port = process.env['MONGO_NODE_DRIVER_PORT'] != null ? process.env['MONGO_NODE_DRIVER_PORT'] : 27017;
-var dbName = process.env['MONITOSHI_DB_NAME'] != null ? process.env['MONITOSHI_DB_NAME'] : 'monitoshi';
+var mongodbUri = process.env['MONGODB_URI'] != null ? process.env['MONGODB_URI'] : 'mongodb://localhost:27017/monitoshi';
 var collectionName = process.env['MONITOSHI_COLLECTION_NAME'] != null ? process.env['MONITOSHI_COLLECTION_NAME'] : 'monitoshi';
-var idDyno = 'xxx1';
 
 /**
  * Handle data about monitored services
  * this means to access the DB and get/set data
  * @class DataManager
  */
-module.exports = DataManager = function(ready) {
+module.exports = DataManager = function(idDyno, ready) {
+  this.idDyno = idDyno;
   // connect to db
-  console.log("Connecting to " + host + ":" + port);
-  this.db = new Db(dbName, new Server(host, port, {}), {native_parser:true});
-  this.db.open(function(err, db) {
+  console.log('Connecting to mongodb ' + mongodbUri.substr(0, 30) + '...');
+  // Use connect method to connect to the Server
+  MongoClient.connect(mongodbUri, function(err, db) {
+    this.db = db;
     if(err) {
+      console.error('DataManager:: init db error', err);
       ready(err);
     }
-    else db.collection(collectionName, function(err, collection) {
+    else this.db.collection(collectionName, function(err, collection) {
       this.collection = collection;
+      if(err) console.error('DataManager:: init db error', err);
       ready(err);
     }.bind(this));
   }.bind(this));
@@ -41,7 +42,7 @@ DataManager.prototype.lockNext = function(cbk) {
       __enabled: true,
       __lockedBy: ''
     }, [['__lastProcessed', 'ascending']], {
-      $set: {__lockedBy: idDyno}
+      $set: {__lockedBy: this.idDyno}
     },
     {new: true},
   function(err, result) {
@@ -77,7 +78,7 @@ DataManager.prototype.unlock = function(data, changes, cbk) {
 DataManager.prototype.unlockAll = function(cbk) {
 // findAndModify doc with flag __lockedBy==ID_DYNO   => __lockedBy=''
  this.collection.update({
-      __lockedBy: idDyno
+      __lockedBy: this.idDyno
     }, {
       $set: {__lockedBy: ''}
     },
@@ -103,7 +104,6 @@ DataManager.prototype.enable = function(id, cbk) {
     },
     {new: true},
   function(err, result) {
-    console.log('enable result:', err, result);
     cbk(err, result ? result.value : null);
   });
 };
@@ -124,7 +124,6 @@ DataManager.prototype.disable = function(id, cbk) {
     },
     {new: true},
   function(err, result) {
-    console.log('disable result:', err, result);
     cbk(err, result ? result.value : null);
   });
 };

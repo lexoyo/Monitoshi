@@ -42,7 +42,7 @@ var monitor = new PingMonitor(config.timeout, config.interval, config.attempts);
 
 // loop on data
 var DataManager = require('./queue/data-manager');
-var dataManager = new DataManager(nextLoop);
+var dataManager = new DataManager('inst1', nextLoop);
 var currentData = null;
 
 
@@ -51,12 +51,10 @@ function nextLoop() {
         dataManager.lockNext(function(err, result) {
             if(result) {
                 // no data in the DB
-                console.log('lockNext => ', err, result._id, result.url);
                 currentData = result;
                 monitor.poll(currentData.url);
             }
             else {
-                console.log('no confirmed items found in the db');
                 setTimeout(nextLoop, 100);
             }
         });
@@ -64,18 +62,17 @@ function nextLoop() {
 }
 monitor
 .on('success', function(statusCode) {
-    console.log('** Monitor',  currentData, 'is up', statusCode);
     if(currentData.state === 'down') {
+        console.info('** Monitor',  currentData, 'is now up', statusCode);
         sendUpEmail(currentData);
     }
     dataManager.unlock(currentData, {state: 'up'}, function(err, result) {
-        //console.log('unlock => ', err, result ? result._id : null, result ? result.url : null);
         nextLoop();
     });
 })
 .on('error', function(err) {
-    console.error('** Monitor',  currentData, 'is down -', err);
     if(currentData.state === 'up') {
+        console.info('** Monitor',  currentData, 'is now down -', err);
         sendDownEmail(currentData);
     }
     dataManager.unlock(currentData, {state: 'down'}, function(err, result) {
@@ -104,7 +101,7 @@ app.post('/monitor', function(req, res) {
       url: req.body.url,
       serverUrl: req.protocol + '://' + req.get('host')
     };
-    console.log('Route:: add monitor', typeof data, data);
+    console.info('Route:: add monitor', typeof data, data);
     dataManager.add(data, function(err, data) {
       if(err) {
           displayResult(req, res, {"success": false, "message": err.message });
@@ -123,7 +120,6 @@ app.post('/monitor', function(req, res) {
 app.get('/monitor/:id/enable', function(req, res) {
     console.log('Route:: enable monitor', req.params.id);
     dataManager.enable(req.params.id, function(err, data) {
-      console.log('enabled', err);
       if(err) {
           displayResult(req, res, {"success": false, "message": err.message });
       }
@@ -141,7 +137,6 @@ app.get('/monitor/:id/enable', function(req, res) {
 app.get('/monitor/:id/disable', function(req, res) {
     console.log('Route:: enable monitor', req.params.id);
     dataManager.disable(req.params.id, function(err) {
-      console.log('disabled', err);
       if(err) {
         displayResult(req, res, {"success": false, "message": err.message });
       }
@@ -153,7 +148,6 @@ app.get('/monitor/:id/disable', function(req, res) {
 app.get('/monitor/:id/del', function(req, res) {
     console.log('Route:: del monitor', req.params.id);
     dataManager.del(req.params.id, function(err, data) {
-      console.log('del', err, data);
       if(err) {
         displayResult(req, res, {"success": false, "message": err.message });
       }
