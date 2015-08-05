@@ -152,7 +152,7 @@ DataManager.prototype.add = function(data, cbk) {
 */
 DataManager.prototype.del = function(id, cbk) {
   var data = {_id:ObjectID(id)};
- this.collection.findOne(function(err, data) {
+ this.collection.findOne(data, function(err, data) {
       if(err) {
           cbk(err, data);
       }
