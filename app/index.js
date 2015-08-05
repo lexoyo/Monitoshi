@@ -24,14 +24,32 @@ function displayResult(req, res, data) {
   }
   else {
     if(data.success === true) {
-      res.status(200).send('<h1>' + (data.message || data.items) + '</h1><hr>Thank you for using <a href="https://github.com/lexoyo/Monitoshi/">Monitoshi</a>');
+      var footer = '<hr>Thank you for using <a href="https://github.com/lexoyo/Monitoshi/">Monitoshi</a>';
+      if(data.message) {
+        res.status(200).send('<h1>' + data.message + '</h1>' + footer);
+      }
+      else {
+        res.status(200).send('<h1>List of monitors</h1>' + formatList(data.items) + footer);
+      }
+
     }
     else {
       res.status(500).send('<h1>' + (data.message || '') + '</h1><hr>Something went wrong, we are sorry about that. Here is <a href="https://github.com/lexoyo/Monitoshi/issues">the help section of Monitoshi</a>.');
     }
   }
 }
-
+function formatList (items) {
+  return '<ul>' + items.map(function(item) {
+    return '<li><ul>' +
+      '<li><a href="' + item.url + '">' + item.url + '</a>' +
+      ' (' + (item.__enabled ? 'confirmed' : 'NOT confirmed') + ', ' + (item.state || 'Unknown') + ')</li>' +
+      '<li><a href="/monitor/' + item._id + '/enable">enable</a></li>' +
+      '<li><a href="/monitor/' + item._id + '/disable">disable</a></li>' +
+      '<li><a href="/monitor/' + item._id + '/del">del</a></li>' +
+      '</ul></li>';
+  })
+  .join('') + '</ul>';
+}
 console.info('***********************************');
 console.info('Monitoshi starting');
 console.info('***********************************');

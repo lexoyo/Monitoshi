@@ -24,7 +24,12 @@ Here are the app routes
 
 ## How to install
 
-With node installed ([download](http://nodejs.org/download)), checkout this repository and do
+Requirements
+
+* [Node.js](http://nodejs.org/)
+* [MongoDB](https://www.mongodb.org/) installed and running (`mkdir -p data && mongod --dbpath ./data`)
+
+Checkout this repository and run:
 
     $ npm install
     $ node app
