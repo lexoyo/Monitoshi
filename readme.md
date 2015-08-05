@@ -66,11 +66,6 @@ todo: move these ideas to https://github.com/lexoyo/Monitoshi/issues/1
 
 dev
 
-* /index.html has a title set to "test"
-* does not warn when http://01silex.com/tests/monitoshi/ goes down
-* !! /del deletes the wrong monitor
-  https://github.com/lexoyo/Monitoshi/issues/2
-* i should have the status (up/down) in the email to confirm a monitor started
 * cleanup index.js, create Router, use email aert...
 * check if exist before add
 * badge "http://...........com is UP"
