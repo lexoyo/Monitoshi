@@ -101,8 +101,8 @@ monitor
 // API
 app.use(bodyParser.json()); // for parsing application/json
 app.use(bodyParser.urlencoded({ extended: true })); // for parsing application/x-www-form-urlencoded
-if(process.env.MONITOSHI_DEBUG) {
-  app.get('/monitor', function(req, res) {
+if(process.env.MONITOSHI_ADMIN_PASS) {
+  app.get('/' + process.env.MONITOSHI_ADMIN_PASS + '/', function(req, res) {
     dataManager.list(function(err, dataArr) {
       if(err) {
         displayResult(req, res, {"success": false, "message": err.message });

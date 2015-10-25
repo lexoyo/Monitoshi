@@ -4,7 +4,7 @@ var Db = require('mongodb').Db,
   MongoClient = require('mongodb').MongoClient;
 // config
 var mongodbUri = process.env['MONGODB_URI'] !== null ? process.env['MONGODB_URI'] : 'mongodb://localhost:27017/monitoshi';
-var collectionName = process.env['MONITOSHI_COLLECTION_NAME'] !== null ? process.env['MONITOSHI_COLLECTION_NAME'] : 'monitoshi';
+var collectionName = process.env['MONITOSHI_COLLECTION_NAME'] ? process.env['MONITOSHI_COLLECTION_NAME'] : 'monitoshi';
 
 /**
  * Handle data about monitored services
@@ -14,7 +14,7 @@ var collectionName = process.env['MONITOSHI_COLLECTION_NAME'] !== null ? process
 module.exports = DataManager = function(idDyno, ready) {
   this.idDyno = idDyno;
   // connect to db
-  console.log('Connecting to mongodb ' + mongodbUri.substr(0, 30) + '...');
+  console.log('Connecting to mongodb ' + mongodbUri.substr(0, 30) + '... - collectionName=' + collectionName);
   // Use connect method to connect to the Server
   MongoClient.connect(mongodbUri, function(err, db) {
     this.db = db;
