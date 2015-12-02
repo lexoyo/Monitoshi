@@ -20,7 +20,7 @@ Here are the app routes
 * GET /monitor/:id/enable => enable a monitor, has to be called after a new monitor is added
 * GET /monitor/:id/disable => disable a monitor, for tests
 * GET /monitor/:id/del => remove a monitor, for tests
-* GET /monitor => debug only (when the env var `MONITOSHI_DEBUG` is defined), displays all monitors
+* GET /monitor/[MONITOSHI_ADMIN_PASS] => debug only (when the env var `MONITOSHI_ADMIN_PASS` is defined), displays all monitors
 
 ## How to install
 

@@ -3,9 +3,9 @@
     "name"        : "Monitoshi",
     "script"      : "app/index.js",
     "watch"       : true,
-    "ignore_watch": ["data", "node_modules"],
+    "ignore_watch": ["data", "node_modules", ".git", "public"],
     "env": {
-        "MONITOSHI_DEBUG": true
+        "MONITOSHI_ADMIN_PASS": "debug"
     }
   }]
 }

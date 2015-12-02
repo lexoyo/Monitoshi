@@ -2,16 +2,26 @@
 <html>
 <head>
   <title>Monitoshi</title>
+  <link rel="icon" type="image/x-icon" href="./favicon.png">
 </head>
 <body>
-    <h1>Monitoshi</h1>
     <p>
         Add a monitor to be notified by email when the website is down.
     </p>
     <form action="/monitor" method="POST">
         <input type="email" name="email" placeholder="you@mail.com">
         <input type="url" name="url" placeholder="http://your-site.com">
+        <input type="hidden" id="siteName" name="siteName" value="">
         <button type="submit">OK</button>
     </form>
+    <br />
+    <br />
+    <small>
+        <p>By using this service you agree that it can not be responsible for any problem you may have. Monitoshi is an open source project, see its <a href="https://github.com/lexoyo/Monitoshi">license and code here</a></p>
+        <p><a href="https://github.com/lexoyo/Monitoshi/wiki/Embed-Monitoshi-in-an-HTML-page" target="blank">Add this to your website.</a></p>
+    </small>
+    <script>
+        document.getElementById('siteName').value = window.location.href;
+    </script>
 </body>
 </html>

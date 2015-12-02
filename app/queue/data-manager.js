@@ -25,6 +25,10 @@ module.exports = DataManager = function(idDyno, ready) {
     else this.db.collection(collectionName, function(err, collection) {
       this.collection = collection;
       if(err) console.error('DataManager:: init db error', err);
+      else this.db.collection("storedData", function(err, collection) {
+        this.collectionStoredData = collection;
+        if(err) console.error('DataManager:: init db error', err);
+      }.bind(this));
       ready(err);
     }.bind(this));
   }.bind(this));
@@ -166,10 +170,55 @@ DataManager.prototype.del = function(id, cbk) {
 
 /**
 * dump the db
-* @param {function(err:String)} cbk
+* @param {function(err:String, list: Array.<*>)} cbk
 */
 DataManager.prototype.list = function(cbk) {
  this.collection.find().toArray(function(err, items) {
     cbk(err, items);
   });
 };
+
+
+/**
+* @param {function(err:String, count:number)} cbk
+*/
+DataManager.prototype.count = function(cbk) {
+ this.collection.find().count(function(err, count) {
+    cbk(err, count);
+  });
+};
+
+
+/**
+* store arbitrary data
+* @param {string} id
+* @param {function(err:String)} cbk
+*/
+DataManager.prototype.store = function(name, update, cbk) {
+  var data = {storedDataName:name};
+  if (!update['$set']) update['$set'] = {};
+  update['$set'].storedDataName = name;
+ this.collectionStoredData.findAndModify(
+    data, [], update,
+    {new: true, upsert:true},
+  function(err, result) {
+    cbk(err, result ? result.value : null);
+  });
+};
+
+
+/**
+* store arbitrary data
+* @param {string} name
+* @param {function(err:String, value:*)} cbk
+*/
+DataManager.prototype.get = function(name, cbk) {
+  var data = {storedDataName:name};
+  this.collectionStoredData.findOne(
+    data,
+  function(err, result) {
+    cbk(err, result);
+  });
+};
+
+

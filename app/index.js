@@ -68,11 +68,11 @@ function nextLoop() {
     dataManager.unlockAll(function(err, result) {
         dataManager.lockNext(function(err, result) {
             if(result) {
-                // no data in the DB
                 currentData = result;
                 monitor.poll(currentData.url);
             }
             else {
+                // no data in the DB
                 setTimeout(nextLoop, 100);
             }
         });
@@ -92,6 +92,14 @@ monitor
     if(currentData.state === 'up') {
         console.info('** Monitor',  currentData, 'is now down -', err);
         sendDownEmail(currentData);
+        dataManager.store('stats',  {
+          $setOnInsert: {
+            created: Date.now()
+          },
+          $inc: {
+            downtimesCount: 1
+          }
+        }, function(err, result) {});
     }
     dataManager.unlock(currentData, {state: 'down'}, function(err, result) {
         nextLoop();
@@ -135,6 +143,20 @@ app.post('/monitor', function(req, res) {
       }
     });
 });
+
+app.get('/info', function(req, res) {
+    dataManager.count(function(err, count) {
+        dataManager.get('stats', function(err, stats) {
+            if(!stats) stats = {};
+            res.render('info.ejs', {
+                "downtimes": stats.downtimesCount,
+                "created": new Date(stats.created),
+                "monitors": count
+            });
+        });
+    });
+});
+
 app.get('/monitor/:id/enable', function(req, res) {
     console.log('Route:: enable monitor', req.params.id);
     dataManager.enable(req.params.id, function(err, data) {
@@ -183,6 +205,9 @@ app.get('/monitor/:id/del', function(req, res) {
 
 // public folder
 app.use('/', express.static(__dirname + '/../public'));
+// template engine
+app.set('view engine', 'ejs');
+app.set('views', 'app/views');
 
 // listen to http requests
 if (!module.parent) {
