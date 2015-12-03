@@ -3,7 +3,7 @@ var Db = require('mongodb').Db,
   ObjectID = require('mongodb').ObjectID,
   MongoClient = require('mongodb').MongoClient;
 // config
-var mongodbUri = process.env['MONGODB_URI'] !== null ? process.env['MONGODB_URI'] : 'mongodb://localhost:27017/monitoshi';
+var mongodbUri = process.env['MONGODB_URI'] ? process.env['MONGODB_URI'] : 'mongodb://localhost:27017/monitoshi';
 var collectionName = process.env['MONITOSHI_COLLECTION_NAME'] ? process.env['MONITOSHI_COLLECTION_NAME'] : 'monitoshi';
 
 /**
