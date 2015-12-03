@@ -24,7 +24,7 @@ function displayResult(req, res, data) {
   }
   else {
     if(data.success === true) {
-      var footer = '<hr>Thank you for using <a href="https://github.com/lexoyo/Monitoshi/">Monitoshi</a>';
+      var footer = '<hr>Thank you for using <a href="https://github.com/lexoyo/Monitoshi/" target="_blank">Monitoshi</a>';
       if(data.message) {
         res.status(200).send('<h1>' + data.message + '</h1>' + footer);
       }
@@ -34,7 +34,7 @@ function displayResult(req, res, data) {
 
     }
     else {
-      res.status(500).send('<h1>' + (data.message || '') + '</h1><hr>Something went wrong, we are sorry about that. Here is <a href="https://github.com/lexoyo/Monitoshi/issues">the help section of Monitoshi</a>.');
+      res.status(500).send('<h1>' + (data.message || '') + '</h1><hr>Something went wrong, we are sorry about that. Here is <a href="https://github.com/lexoyo/Monitoshi/issues" target="_blank">the help section of Monitoshi</a>.');
     }
   }
 }
