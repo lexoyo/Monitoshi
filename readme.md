@@ -27,7 +27,7 @@ Here are the app routes
 Requirements
 
 * [Node.js](http://nodejs.org/)
-* [MongoDB](https://www.mongodb.org/) installed and running (`mkdir -p data && mongod --dbpath ./data`)
+* [MongoDB](https://www.mongodb.org/) installed and running (`npm run serve` or `mongod --dbpath ./data`)
 
 Checkout this repository and run:
 
