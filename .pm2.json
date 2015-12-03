@@ -1,0 +1,12 @@
+{
+  "apps" : [{
+    "name"        : "Monitoshi",
+    "script"      : "app/index.js",
+    "watch"       : true,
+    "ignore_watch": ["data", "node_modules"],
+    "env": {
+        "MONITOSHI_DEBUG": true
+    }
+  }]
+}
+

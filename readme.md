@@ -33,7 +33,14 @@ Checkout this repository and run:
 
 ```
     $ npm install
+```
+Then start the server with this command (mongodb needs to be running)
+```
     $ node app
+```
+Alternatively you can use the excellent [pm2 process manager](http://pm2.keymetrics.io/) to start the server:
+```
+    $ pm2 start .pm2.json
 ```
 
 The `MT_CONFIG` environment variable may contain a config json string, like the provided sample [default-config.js](https://github.com/lexoyo/Monitoshi/blob/master/default-config.js) but without line breaks. Alternatively you can provide the path of a json file (also like [default-config.js](https://github.com/lexoyo/Monitoshi/blob/master/default-config.js)) in the environment variable `MT_CONFIG_FILE`. Last method you can use for the config: if you use [Heroku](https://www.heroku.com) for hosting, see [how to set environment variables on your VM](https://devcenter.heroku.com/articles/config-vars), and this [useful plugin to handle config](https://github.com/ddollar/heroku-config).
