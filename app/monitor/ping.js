@@ -88,7 +88,10 @@ PingMonitor.prototype.poll = function(url, opt_failed) {
             this.emit('error', error);
         }
         else {
-            this.poll(url, failed);
+            // Wait a bit before polling it again
+            setTimeout(function(){
+              this.poll(url, failed);
+            }, 500);
         }
     }.bind(this))
     .on('socket', function (socket) {
