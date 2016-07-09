@@ -2,6 +2,8 @@
 var express    = require('express');
 var app = module.exports = express();
 var bodyParser = require('body-parser');
+var Logger = require('./logger');
+var logger = new Logger();
 
 // config
 var config;
