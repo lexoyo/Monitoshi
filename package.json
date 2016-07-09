@@ -28,7 +28,7 @@
     "express": "4.11.0",
     "mongodb": "2.0.39",
     "newrelic": "1.28.2",
-    "nodemailer": "1.4.0"
+    "nodemailer": "2.5.0"
   },
   "scripts": {
     "start": "node app/",
