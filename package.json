@@ -19,7 +19,7 @@
   "main": "./app/index.js",
   "license": "MIT",
   "engines": {
-    "node": "~0.10.35"
+    "node": "~6.2.2"
   },
   "readmeFilename": "readme.md",
   "dependencies": {
