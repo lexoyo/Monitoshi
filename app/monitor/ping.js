@@ -56,49 +56,56 @@ util.inherits(PingMonitor, events.EventEmitter);
 PingMonitor.prototype.poll = function(url, opt_failed) {
     var hasTimedout = false;
     var failed = opt_failed || 0;
+    console.log('polling', url, failed);
     // handle https as well as http
     var service = url.indexOf('https') === 0 ? https : http;
-    // do the request to get the website
-    var req = service.get(url, function(res) {
-        // abort, otherwise it emmits a socket timeout after the timeout is elapsed
-        req.abort();
-        // notify the listeners
-        if(res.statusCode === 200) {
-            this.emit('success', res.statusCode);
-        }
-        else {
-            if(++failed >= this.attempts) {
-                this.emit('error', new Error('HTTPERROR', res.statusCode));
+    try {
+        // do the request to get the website
+        var req = service.get(url, function(res) {
+            // abort, otherwise it emmits a socket timeout after the timeout is elapsed
+            req.abort();
+            // notify the listeners
+            if(res.statusCode === 200) {
+                this.emit('success', res.statusCode);
             }
             else {
-                this.poll(url, failed);
+                if(++failed >= this.attempts) {
+                    this.emit('error', new Error('HTTPERROR', res.statusCode));
+                }
+                else {
+                    this.poll(url, failed);
+                }
             }
-        }
-    }.bind(this))
-    .on('error', function(e) {
-        // just in case, to prevent fireing timeout
-        req.abort();
-        if(++failed >= this.attempts) {
-            // notify the listeners
-            var error = e;
-            if(hasTimedout === true) {
-                hasTimedout = false;
-                error = new Error('TIMEOUT');
-            }
-            this.emit('error', error);
-        }
-        else {
-            // Wait a bit before polling it again
-            setTimeout(function(){
-              this.poll(url, failed);
-            }.bind(this), 500);
-        }
-    }.bind(this))
-    .on('socket', function (socket) {
-        socket.setTimeout(this.timeout);
-        socket.on('timeout', function() {
-            hasTimedout = true;
+        }.bind(this))
+        .on('error', function(e) {
+            // just in case, to prevent fireing timeout
             req.abort();
+            if(++failed >= this.attempts) {
+                // notify the listeners
+                var error = e;
+                if(hasTimedout === true) {
+                    hasTimedout = false;
+                    error = new Error('TIMEOUT');
+                }
+                this.emit('error', error);
+            }
+            else {
+                // Wait a bit before polling it again
+                setTimeout(function(){
+                  this.poll(url, failed);
+                }.bind(this), 500);
+            }
+        }.bind(this))
+        .on('socket', function (socket) {
+            socket.setTimeout(this.timeout);
+            socket.on('timeout', function() {
+                hasTimedout = true;
+                req.abort();
+            }.bind(this));
         }.bind(this));
-    }.bind(this));
+    }
+    catch(e) {
+        // this happens when url is like https:www.abcdefgh.com.br/
+        console.error('Poll Error', url, e);
+    }
 };
