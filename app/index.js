@@ -43,7 +43,7 @@ function displayResult(req, res, data) {
 function formatList (items) {
   return '<ul>' + items.map(function(item) {
     return `<li><ul>
-      <li>${item.url} (${ item.__enabled ? 'confirmed' : 'NOT confirmed' }, ${ item.state || 'Unknown' }, ${ item.email })</li>
+      <li>${item.url} (${ item.__enabled ? 'confirmed' : 'NOT confirmed' }, ${ item.state || 'Unknown' }, ${ item.email }, created ${ item.created })</li>
       <li><a href="/monitor/${ item._id }/enable">enable</a></li>
       <li><a href="/monitor/${ item._id }/disable">disable</a></li>
       <li><a href="/monitor/${ item._id }/del">del</a></li>
@@ -126,7 +126,8 @@ app.post('/monitor', function(req, res) {
     var data = {
       email: req.body.email,
       url: req.body.url,
-      serverUrl: req.protocol + '://' + req.get('host')
+      serverUrl: req.protocol + '://' + req.get('host'),
+      created: Date.now()
     };
     console.info('Route:: add monitor', typeof data, data);
     dataManager.add(data, function(err, data) {
