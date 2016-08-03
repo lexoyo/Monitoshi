@@ -81,6 +81,7 @@ function nextLoop() {
 }
 monitor
 .on('success', function(statusCode) {
+    console.log('polling returns success', currentData, statusCode);
     if(currentData.state === 'down') {
         console.info('** Monitor',  currentData, 'is now up', statusCode);
         sendUpEmail(currentData);
@@ -90,6 +91,7 @@ monitor
     });
 })
 .on('error', function(err) {
+    console.log('polling returns error', currentData, err);
     if(currentData.state === 'up') {
         console.info('** Monitor',  currentData, 'is now down -', err);
         sendDownEmail(currentData);
