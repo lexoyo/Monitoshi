@@ -5,7 +5,6 @@
     "watch"       : true,
     "ignore_watch": ["data", "node_modules", ".git", "public"],
     "env": {
-        "MONITOSHI_ADMIN_PASS": "debug"
     }
   }]
 }
