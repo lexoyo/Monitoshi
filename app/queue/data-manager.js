@@ -155,8 +155,9 @@ DataManager.prototype.add = function(data, cbk) {
 * @param {function(err:String)} cbk
 */
 DataManager.prototype.del = function(id, cbk) {
+  console.info('del will remove monitor:', id);
   var data = {_id:ObjectID(id)};
- this.collection.findOne(data, function(err, data) {
+  this.collection.findOne(data, function(err, data) {
       if(err) {
           cbk(err, data);
       }
