@@ -13,15 +13,6 @@ var util = require('util');
  * @param {?number=} opt_attempts number of attempts before an URL is considered down, default is 3
  */
 module.exports = PingMonitor = function(opt_timeout, opt_interval, opt_attempts) {
-    /**
-     * interval after which the website is polled again
-     * may be specified in the main config object or in the monitor config
-     * in ms
-     * @type {number}
-     * @default 10000
-     */
-    this.interval = opt_interval || 10000;
-
 
     /**
      * timeout after which the website is considered to be down
@@ -54,9 +45,11 @@ util.inherits(PingMonitor, events.EventEmitter);
  * @param {boolean} isUp
  */
 PingMonitor.prototype.poll = function(url, opt_failed) {
+  console.log('polling url', url);
     var hasTimedout = false;
     var failed = opt_failed || 0;
     // handle https as well as http
+    // FIXME: use https://www.npmjs.com/package/request
     var service = url.indexOf('https') === 0 ? https : http;
     try {
         // do the request to get the website

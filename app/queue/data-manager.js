@@ -37,14 +37,18 @@ module.exports = DataManager = function(idDyno, ready) {
 
 /**
  * get the next data to process and lock it
- * @return {object}
  * @param {function(err:String, result:object)} cbk
+ * @param {number} delay minimum allowed delay between last update and now
  */
-DataManager.prototype.lockNext = function(cbk) {
-  // findAndModify oldest __lastProcessed with __lockedBy='' + set flag __lockedBy=ID_DYNO
+DataManager.prototype.lockNext = function(delay, cbk) {
+  console.log('lockNext', delay);
+ // findAndModify oldest __lastProcessed with __lockedBy='' + set flag __lockedBy=ID_DYNO
  this.collection.findAndModify({
       __enabled: true,
-      __lockedBy: ''
+      __lockedBy: '',
+      __lastProcessed: {
+        $lt: Date.now() - delay
+      }
     }, [['__lastProcessed', 'ascending']], {
       $set: {__lockedBy: this.idDyno}
     },

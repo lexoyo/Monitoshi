@@ -67,7 +67,7 @@ var currentData = null;
 
 function nextLoop() {
     dataManager.unlockAll(function(err, result) {
-        dataManager.lockNext(function(err, result) {
+        dataManager.lockNext(config.interval, function(err, result) {
             if(result) {
                 currentData = result;
                 monitor.poll(currentData.url);
