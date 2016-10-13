@@ -56,7 +56,6 @@ util.inherits(PingMonitor, events.EventEmitter);
 PingMonitor.prototype.poll = function(url, opt_failed) {
     var hasTimedout = false;
     var failed = opt_failed || 0;
-    console.log('polling', url, failed);
     // handle https as well as http
     var service = url.indexOf('https') === 0 ? https : http;
     try {
