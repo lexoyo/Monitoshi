@@ -41,7 +41,6 @@ module.exports = DataManager = function(idDyno, ready) {
  * @param {number} delay minimum allowed delay between last update and now
  */
 DataManager.prototype.lockNext = function(delay, cbk) {
-  console.log('lockNext', delay);
  // findAndModify oldest __lastProcessed with __lockedBy='' + set flag __lockedBy=ID_DYNO
  this.collection.findAndModify({
       __enabled: true,
