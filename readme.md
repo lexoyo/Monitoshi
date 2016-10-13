@@ -10,18 +10,6 @@ More details on how it works: you submit an URL to Monitoshi, along with your em
 
 [Roadmap is here](https://github.com/lexoyo/Monitoshi/issues/1) and [feature requests can be done here](https://github.com/lexoyo/Monitoshi/issues/).
 
-## Routes
-
-You can use monitoshi as is, reaching the routes listed bellow with a web browser or use it as an API with `&format=json` at the end of the URLs in order to have JSON responses instead of HTML messages.
-
-Here are the app routes
-
-* POST /monitor => add a monitor
-* GET /monitor/:id/enable => enable a monitor, has to be called after a new monitor is added
-* GET /monitor/:id/disable => disable a monitor, for tests
-* GET /monitor/:id/del => remove a monitor, for tests
-* GET /monitor/[MONITOSHI_ADMIN_PASS] => debug only (when the env var `MONITOSHI_ADMIN_PASS` is defined), displays all monitors
-
 ## How to install
 
 Requirements
@@ -29,21 +17,35 @@ Requirements
 * [Node.js](http://nodejs.org/)
 * [MongoDB](https://www.mongodb.org/) installed and running (`npm run serve` or `mongod --dbpath ./data`)
 
-Checkout this repository and run:
+1- Checkout this repository (`git clone https://github.com/lexoyo/Monitoshi.git && cd Monitoshi`)
+
+2- copy `config-sample.js` to `sample.js`, and edit this file to **change at least the mail options to send emails**. Monitoshi uses [Nodemailer](https://nodemailer.com/) to send emails, and you have to define nodemailer's config in the `nodemailer` object of your config file. (Monitoshi does `nodemailer.createTransport(config.nodemailer)`. Check [nodemailer docs](https://nodemailer.com/) or [Using Gmail section](https://nodemailer.com/using-gmail/) (gmail is really a poor solution, I use SMTP).
+
+Ask me any questions about this in the github issues of the project.
+
+For production, see bellow the "Other way to change the config".
+
+3- run this to install dependecies:
 
 ```
     $ npm install
 ```
-Then start the server with this command (mongodb needs to be running)
+
+4- Then start the server with this command (mongodb needs to be running)
+
 ```
     $ node app
 ```
+
 Alternatively you can use the excellent [pm2 process manager](http://pm2.keymetrics.io/) to start the server:
+
 ```
     $ pm2 start .pm2.json
 ```
 
-The `MT_CONFIG` environment variable may contain a config json string, like the provided sample [default-config.js](https://github.com/lexoyo/Monitoshi/blob/master/default-config.js) but without line breaks. Alternatively you can provide the path of a json file (also like [default-config.js](https://github.com/lexoyo/Monitoshi/blob/master/default-config.js)) in the environment variable `MT_CONFIG_FILE`. Last method you can use for the config: if you use [Heroku](https://www.heroku.com) for hosting, see [how to set environment variables on your VM](https://devcenter.heroku.com/articles/config-vars), and this [useful plugin to handle config](https://github.com/ddollar/heroku-config).
+### Other way to change the config
+
+The `MT_CONFIG` environment variable may contain a config json string, like the provided sample [config-sample.js](https://github.com/lexoyo/Monitoshi/blob/master/config-sample.js) but without line breaks. Alternatively you can provide the path of a json file (also like [config-sample.js](https://github.com/lexoyo/Monitoshi/blob/master/config-sample.js)) in the environment variable `MT_CONFIG_FILE`. Last method you can use for the config: if you use [Heroku](https://www.heroku.com) for hosting, see [how to set environment variables on your VM](https://devcenter.heroku.com/articles/config-vars), and this [useful plugin to handle config](https://github.com/ddollar/heroku-config).
 
 Example of config:
 
@@ -55,15 +57,23 @@ Example of config:
 }
 ```
 
-## Alert types
-
-Email
-
-Web hooks are great to use in conjuction with [Zapier](https://zapier.com/) to send emails or take actions in case of an URL changing status (service up or down). Please share with us if you find other services.
-
 ## Contributions and road map
 
 Let's [talk about it in this thread](https://github.com/lexoyo/Monitoshi/issues/1).
+
+## Notes for developers
+
+### Routes
+
+You can use monitoshi as is, reaching the routes listed bellow with a web browser or use it as an API with `&format=json` at the end of the URLs in order to have JSON responses instead of HTML messages.
+
+Here are the app routes
+
+* POST /monitor => add a monitor
+* GET /monitor/:id/enable => enable a monitor, has to be called after a new monitor is added
+* GET /monitor/:id/disable => disable a monitor, for tests
+* GET /monitor/:id/del => remove a monitor, for tests
+* GET /monitor/[MONITOSHI_ADMIN_PASS] => debug only (when the env var `MONITOSHI_ADMIN_PASS` is defined), displays all monitors
 
 ## License
 

@@ -12,7 +12,7 @@ if (process.env.MT_CONFIG) {
 }
 else {
     var fs = require('fs');
-    var configFile = process.env.MT_CONFIG_FILE || __dirname + '/../default-config.js';
+    var configFile = process.env.MT_CONFIG_FILE || __dirname + '/../config.js';
     config = require(configFile);
     console.log('MT_CONFIG env variable is not defined, and MT_CONFIG_FILE is set to',
         process.env.MT_CONFIG_FILE,
