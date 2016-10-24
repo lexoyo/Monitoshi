@@ -106,7 +106,8 @@ DataManager.prototype.enable = function(id, cbk) {
  this.collection.findAndModify(
     data, [], {
       $set: {
-        __enabled: true
+        __enabled: true,
+        __lastProcessed: Date.now()
       }
     },
     {new: true},
@@ -170,7 +171,7 @@ DataManager.prototype.del = function(id, cbk) {
           cbk('could not find record', foundData);
       }
       else this.collection.remove(foundData, function(err, removed) {
-          console.info('removed record', data, err, removed);
+          console.info('removed record', data, err);
           cbk(err, data);
       });
   }.bind(this));

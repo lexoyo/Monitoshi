@@ -43,7 +43,7 @@ function displayResult(req, res, data) {
 function formatList (items) {
   return '<ul>' + items.map(function(item) {
     return `<li><ul>
-      <li>${item.url} (${ item.__enabled ? 'confirmed' : 'NOT confirmed' }, ${ item.state || 'Unknown' }, ${ item.email }, created ${ item.created })</li>
+      <li>${item.url} (${ item.__enabled ? 'confirmed' : 'NOT confirmed' }, ${ item.state || 'Unknown' }, ${ item.email }, created ${ item.created }, last ping ${ item.__lastProcessed })</li>
       <li><a href="/monitor/${ item._id }/enable">enable</a></li>
       <li><a href="/monitor/${ item._id }/disable">disable</a></li>
       <li><a href="/monitor/${ item._id }/del">del</a></li>

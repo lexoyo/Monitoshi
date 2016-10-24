@@ -45,11 +45,11 @@ util.inherits(PingMonitor, events.EventEmitter);
  * @param {boolean} isUp
  */
 PingMonitor.prototype.poll = function(url, opt_failed) {
-  console.log('polling url', url);
+    console.log('polling url', url);
     var hasTimedout = false;
     var failed = opt_failed || 0;
     // handle https as well as http
-    // FIXME: use https://www.npmjs.com/package/request
+    // FIXME: better use https://www.npmjs.com/package/request
     var service = url.indexOf('https') === 0 ? https : http;
     try {
         // do the request to get the website
