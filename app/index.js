@@ -61,9 +61,32 @@ var monitor = new PingMonitor(config.timeout, config.interval, config.attempts);
 
 // loop on data
 var DataManager = require('./queue/data-manager');
-var dataManager = new DataManager('inst1', nextLoop);
+var dataManager = new DataManager('inst1', init);
 var currentData = null;
 
+function init() {
+  dataManager.store('stats',  {
+    $setOnInsert: {
+      created: Date.now(),
+    },
+    $inc: {
+      downtimesCount: 1
+    }
+  }, function(err, result) {
+    // init for each boot
+    dataManager.store('stats',  {
+      $set: {
+        lastReboot: Date.now(),
+      },
+      $inc: {
+        'pingsPerHours.0': 0, // create the field if it does not exist
+      }
+    }, function(err, result) {
+      console.log('started', err, result);
+      nextLoop();
+    });
+  });
+}
 
 function nextLoop() {
     dataManager.unlockAll(function(err, result) {
@@ -75,9 +98,6 @@ function nextLoop() {
                 const inc = {};
                 inc['pingsPerHours.' + (new Date()).getHours()] = 1;
                 dataManager.store('stats',  {
-                  $setOnInsert: {
-                    pingsPerHours: {}
-                  },
                   $inc: inc
                 }, function(err, result) {
                   console.log('stats', result);
@@ -105,9 +125,6 @@ monitor
         console.info('** Monitor',  currentData, 'is now down -', err);
         sendDownEmail(currentData);
         dataManager.store('stats',  {
-          $setOnInsert: {
-            created: Date.now()
-          },
           $inc: {
             downtimesCount: 1
           }
