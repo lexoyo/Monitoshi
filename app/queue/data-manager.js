@@ -160,11 +160,17 @@ DataManager.prototype.add = function(data, cbk) {
 DataManager.prototype.del = function(id, cbk) {
   console.info('del will remove monitor:', id);
   var data = {_id:ObjectID(id)};
-  this.collection.findOne(data, function(err, data) {
+  this.collection.findOne(data, function(err, foundData) {
+      console.log('DEL', err, foundData);
       if(err) {
-          cbk(err, data);
+          cbk(err, foundData);
       }
-      else this.collection.remove(data, function(err, removed) {
+      else if(!foundData) {
+          console.error('could not find record', data);
+          cbk('could not find record', foundData);
+      }
+      else this.collection.remove(foundData, function(err, removed) {
+          console.info('removed record', data, err, removed);
           cbk(err, data);
       });
   }.bind(this));
