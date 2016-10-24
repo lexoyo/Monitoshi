@@ -3,12 +3,30 @@
 <head>
   <title>Monitoshi</title>
   <link rel="icon" type="image/x-icon" href="./favicon.png">
+  <style type="text/css">
+  ul {
+    margin: 0;
+    padding: 0;
+    font-family: sans-serif;
+    color: #333;
+  }
+  li {
+    list-style-type: none;
+    border-bottom: 1px solid darkgray;
+    margin-bottom: 10px;
+    padding-bottom: 10px;
+    text-align: center;
+  }
+  li:last-child {
+    border: none;
+  }
+  </style>
 </head>
 <body>
-    <p>
-        <%= downtimes %> downtimes detected since <%= created.getFullYear() %> / <%= created.getMonth() %>.<br />
-        <%= monitors %> websites monitored.<br />
-        <%= pingsIntervalPerUrl %>s ping interval.<br />
-    </p>
+    <ul class="list">
+        <li><%= downtimes %> downtimes detected since <%= created.getFullYear() %> / <%= created.getMonth() %>.<br /></li>
+        <li><%= monitors %> websites monitored.<br /></li>
+        <li><%= pingsIntervalPerUrl %>s ping interval.<br /></li>
+    </ul>
 </body>
 </html>
