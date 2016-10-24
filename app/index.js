@@ -71,6 +71,17 @@ function nextLoop() {
             if(result) {
                 currentData = result;
                 monitor.poll(currentData.url);
+                // remember number of pings per hours
+                const inc = {};
+                inc['pingsPerHours.' + (new Date()).getHours()] = 1;
+                dataManager.store('stats',  {
+                  $setOnInsert: {
+                    pingsPerHours: {}
+                  },
+                  $inc: inc
+                }, function(err, result) {
+                  console.log('stats', result);
+                });
             }
             else {
                 // no data in the DB
@@ -150,10 +161,20 @@ app.get('/info', function(req, res) {
     dataManager.count(function(err, count) {
         dataManager.get('stats', function(err, stats) {
             if(!stats) stats = {};
+            let pingsIntervalPerUrl = 0;
+            if(stats.pingsPerHours) {
+              let pingsPerHour = 0;
+              for(let hour in stats.pingsPerHours) {
+                pingsPerHour += stats.pingsPerHours[hour];
+              }
+              if(pingsPerHour > 0) pingsIntervalPerUrl = Math.round(24 * 60 * 60 / pingsPerHour);
+              console.log('pingsPerHour', pingsPerHour, 'pingsIntervalPerUrl', pingsIntervalPerUrl);
+            }
             res.render('info.ejs', {
                 "downtimes": stats.downtimesCount,
                 "created": new Date(stats.created),
-                "monitors": count
+                "monitors": count,
+                "pingsIntervalPerUrl": pingsIntervalPerUrl
             });
         });
     });
