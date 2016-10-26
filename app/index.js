@@ -184,7 +184,7 @@ app.get('/info', function(req, res) {
               for(let hour in stats.pingsPerHours) {
                 pingsPerHour += stats.pingsPerHours[hour];
               }
-              if(pingsPerHour > 0) pingsIntervalPerUrl = Math.round(24 * 60 * 60 / pingsPerHour);
+              if(pingsPerHour > 0) pingsIntervalPerUrl = Math.round(count * 24 * 60 * 60 / pingsPerHour);
               console.log('pingsPerHour', pingsPerHour, 'pingsIntervalPerUrl', pingsIntervalPerUrl);
             }
             res.render('info.ejs', {
