@@ -189,7 +189,8 @@ app.get('/info', function(req, res) {
               for(let hour in stats.pingsPerHours) {
                 pingsPerHour += stats.pingsPerHours[hour];
               }
-              if(pingsPerHour > 0) pingsIntervalPerUrl = Math.round(count * 24 * 60 * 60 / pingsPerHour);
+              // compute the interval between 2 pings (using the pingsPerHours value which logs pings of the last 23 hours)
+              if(pingsPerHour > 0) pingsIntervalPerUrl = Math.round(count * 23 * 60 * 60 / pingsPerHour);
               console.log('pingsPerHour', pingsPerHour, 'pingsIntervalPerUrl', pingsIntervalPerUrl);
             }
             res.render('info.ejs', {
