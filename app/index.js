@@ -96,9 +96,14 @@ function nextLoop() {
                 monitor.poll(currentData.url);
                 // remember number of pings per hours
                 const inc = {};
+                const set = {};
+                // increment current hour
                 inc['pingsPerHours.' + (new Date()).getHours()] = 1;
+                // reset next hour
+                set['pingsPerHours.' + ((new Date()).getHours() + 1) % 24] = 0;
                 dataManager.store('stats',  {
-                  $inc: inc
+                  $inc: inc,
+                  $set: set,
                 }, function(err, result) {
                   console.log('stats', result);
                 });
