@@ -263,8 +263,8 @@ function serveBadge(res, left, right, color) {
   );
 }
 app.get('/badge/:id', function(req, res) {
-  console.log('Route:: badge', req.params.id, data);
   dataManager.getDataFromBadge(req.params.id, function(err, data) {
+    console.log('Route:: badge', req.params.id, data);
     if(err) {
       serveBadge(res, 'badge', 'error', 'grey');
     }
