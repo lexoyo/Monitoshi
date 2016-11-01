@@ -259,6 +259,7 @@ function serveBadge(res, left, right, color) {
       }
       else {
         res.setHeader('Cache-Control', 'no-cache');
+        res.setHeader('Expires', '0');
         res.type('svg').status(200).send(svg);
       }
     }
