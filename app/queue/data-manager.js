@@ -145,8 +145,9 @@ DataManager.prototype.disable = function(id, cbk) {
 DataManager.prototype.add = function(data, cbk) {
 //     => this.collection.update(selector, document, { upsert: true });
 //     => with flag __enabled = false
- data.__enabled = false,
+  data.__enabled = false,
   data.__lockedBy = '';
+  data.__badgeId = Date.now() + '-' + Math.round(Math.random() * 9999);
   this.collection.insert([data], function(err, docs) {
     cbk(err, data);
   });
@@ -162,7 +163,6 @@ DataManager.prototype.del = function(id, cbk) {
   console.info('del will remove monitor:', id);
   var data = {_id:ObjectID(id)};
   this.collection.findOne(data, function(err, foundData) {
-      console.log('DEL', err, foundData);
       if(err) {
           cbk(err, foundData);
       }
@@ -172,7 +172,7 @@ DataManager.prototype.del = function(id, cbk) {
       }
       else this.collection.remove(foundData, function(err, removed) {
           console.info('removed record', data, err);
-          cbk(err, data);
+          cbk(err, foundData);
       });
   }.bind(this));
 };
@@ -230,6 +230,30 @@ DataManager.prototype.get = function(name, cbk) {
   function(err, result) {
     cbk(err, result);
   });
+};
+
+
+DataManager.prototype.getDataFromBadge = function(id, cbk) {
+  var data = {__badgeId:id};
+  this.collection.findOne(data, function(err, data) {
+    cbk(err, data);
+  }.bind(this));
+};
+
+
+DataManager.prototype.getIdFromBadge = function(id, cbk) {
+  var data = {__badgeId:ObjectID(id)};
+  this.collection.findOne(data, function(err, data) {
+    cbk(err, data ? data._id : null);
+  }.bind(this));
+};
+
+
+DataManager.prototype.getBadgeFromId = function(id, cbk) {
+  var data = {_id:ObjectID(id)};
+  this.collection.findOne(data, function(err, data) {
+    cbk(err, data ? data.__badgeId : null);
+  }.bind(this));
 };
 
 

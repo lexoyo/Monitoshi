@@ -47,6 +47,7 @@ function formatList (items) {
       <li><a href="/monitor/${ item._id }/enable">enable</a></li>
       <li><a href="/monitor/${ item._id }/disable">disable</a></li>
       <li><a href="/monitor/${ item._id }/del">del</a></li>
+      <li><a href="/badge/${ item.__badgeId }"><img src="/badge/${ item.__badgeId }"/></a></li>
       </ul></li>`;
   })
   .join('') + '</ul>';
@@ -191,7 +192,6 @@ app.get('/info', function(req, res) {
               }
               // compute the interval between 2 pings (using the pingsPerHours value which logs pings of the last 23 hours)
               if(pingsPerHour > 0) pingsIntervalPerUrl = Math.round(count * 23 * 60 * 60 / pingsPerHour);
-              console.log('pingsPerHour', pingsPerHour, 'pingsIntervalPerUrl', pingsIntervalPerUrl);
             }
             res.render('info.ejs', {
                 "downtimes": stats.downtimesCount,
@@ -211,7 +211,7 @@ app.get('/monitor/:id/enable', function(req, res) {
       }
       else {
           if(data) {
-            sendStartEmail(req.protocol + '://' + req.get('host'), data._id, data.email, data.url);
+            sendStartEmail(req.protocol + '://' + req.get('host'), data._id, data.email, data.url, data.__badgeId);
             displayResult(req, res, {"success": true, "message": "The monitor is now active."});
           }
           else {
@@ -221,7 +221,7 @@ app.get('/monitor/:id/enable', function(req, res) {
     });
 });
 app.get('/monitor/:id/disable', function(req, res) {
-    console.log('Route:: enable monitor', req.params.id);
+    console.log('Route:: disable monitor', req.params.id);
     dataManager.disable(req.params.id, function(err) {
       if(err) {
         displayResult(req, res, {"success": false, "message": err.message });
@@ -247,6 +247,38 @@ app.get('/monitor/:id/del', function(req, res) {
         }
       }
     });
+});
+const badge = require('gh-badges');
+const url = require('url');
+function serveBadge(res, left, right, color) {
+  badge({ text: [left, right], colorscheme: color, template: "flat" },
+    function(svg, err) {
+      if(err) {
+        res.status(500).send('');
+      }
+      else {
+        res.type('svg').status(200).send(svg);
+      }
+    }
+  );
+}
+app.get('/badge/:id', function(req, res) {
+  console.log('Route:: badge', req.params.id, data);
+  dataManager.getDataFromBadge(req.params.id, function(err, data) {
+    if(err) {
+      serveBadge(res, 'badge', 'error', 'grey');
+    }
+    else {
+      if(data) {
+        const color = data.state === 'up' ? 'green' : data.state === 'down' ? 'red' : 'grey';
+        const domain = url.parse(data.url).hostname;
+        serveBadge(res, domain, data.state ? data.state : 'unknown yet', color);
+      }
+      else {
+        serveBadge(res, 'badge', 'error', 'grey');
+      }
+    }
+  });
 });
 
 // public folder
@@ -275,18 +307,20 @@ function sendConfirmationEmail(serverUrl, id, email, url) {
     transporter.sendMail({
         from: config.nodemailer.auth.user,
         to: email,
-        subject: 'Please confirm monitor creation',
-        text: 'Please follow this link to confirm that you wish Monitoshi to warn you by email when ' + url + ' is down.\n' + callbackUrl
+        subject: 'Confirm monitor creation',
+        text: 'Click the link bellow to allow Monitoshi to warn you by email when your site (' + url + ') is down.\n\n' + callbackUrl
     });
 }
-function sendStartEmail(serverUrl, id, email, url) {
+function sendStartEmail(serverUrl, id, email, url, badgeId) {
     var callbackUrl = serverUrl + '/monitor/' + id + '/del';
-    console.log('sendStartEmail', callbackUrl, email, url);
+    var badgeUrl = serverUrl + '/badge/' + badgeId;
+    console.log('sendStartEmail', callbackUrl, email, url, badgeUrl);
     transporter.sendMail({
         from: config.nodemailer.auth.user,
         to: email,
         subject: 'Monitor Created',
-        text: 'This is an email to confirm that Monitoshi will warn you by email when ' + url + ' is down.\nIf you want TO DELETE it one day, and prevent Monitoshi to watch for this website, follow this link: ' + callbackUrl
+        text: 'This is an email to confirm that Monitoshi will warn you by email when ' + url + ' is down.\n\nIf you want TO DELETE it one day, and prevent Monitoshi to watch for this website, follow this link: ' + callbackUrl +
+          '\n\nAnd if you need a badge to display the state of your site (up or down), use this URL: ' + badgeUrl
     });
 }
 function sendStopEmail(serverUrl, id, email, url) {
@@ -305,7 +339,7 @@ function sendDownEmail(data) {
         from: config.nodemailer.auth.user,
         to: data.email,
         subject: '[Alert]Your website is DOWN',
-        text: 'This is an email to warn you that ' + data.url + ' is down.\nIf you want me to stop monitoring this website, follow this link: ' + callbackUrl
+        text: 'This is an email to warn you that ' + data.url + ' is down.\n\nIf you want me to stop monitoring this website, follow this link: ' + callbackUrl
     });
 }
 function sendUpEmail(data) {
@@ -315,6 +349,6 @@ function sendUpEmail(data) {
         from: config.nodemailer.auth.user,
         to: data.email,
         subject: '[Alert]Your website is UP',
-        text: 'This is an email to inform you that ' + data.url + ' is up again.\nIf you want me to stop monitoring this website, follow this link: ' + callbackUrl
+        text: 'This is an email to inform you that ' + data.url + ' is up again.\n\nIf you want me to stop monitoring this website, follow this link: ' + callbackUrl
     });
 }
