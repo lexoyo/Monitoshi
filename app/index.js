@@ -258,6 +258,7 @@ function serveBadge(res, left, right, color) {
         res.status(500).send('');
       }
       else {
+        res.setHeader('Cache-Control', 'no-cache');
         res.type('svg').status(200).send(svg);
       }
     }
