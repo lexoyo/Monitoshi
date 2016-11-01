@@ -106,7 +106,8 @@ function nextLoop() {
                   $inc: inc,
                   $set: set,
                 }, function(err, result) {
-                  console.log('stats', result);
+                  // success
+                  // console.log('stats', result);
                 });
             }
             else {
