@@ -6,11 +6,23 @@ Ping URLs and send email alerts when it is down or goes up again.
 
 I have [an instance online here](https://monitoshi.herokuapp.com/), feel free to use it - I use it myself to monitor my websites.
 
-More details on how it works: you submit an URL to Monitoshi, along with your email adress, to receive a confirmation link by email. Then Monitoshi will send emails when the URL goes down or up again. In the emails you also have a link to remove your URL and email from Monitoshi's list.
+### How does it work?
+
+You submit an URL to Monitoshi, along with your email adress, to receive a confirmation link by email. Then Monitoshi will send emails when the URL goes down or up again. In the emails you also have a link to remove your URL and email from Monitoshi's list.
+
+### Links
 
 [Roadmap is here](https://github.com/lexoyo/Monitoshi/issues/1) and [feature requests can be done here](https://github.com/lexoyo/Monitoshi/issues/).
 
-## How to install
+### Badges
+
+In the email your will receive upon creation of a new monitor, there will be the URL of a badge like this one:
+
+![silexlabs.org status by monitoshi](http://monitoshi.lexoyo.me/badge/1477987707192-1847)
+
+Use it with markdown to display if your service is up or down, on a status page or in the README of your project.
+
+## Install locally
 
 Requirements
 
