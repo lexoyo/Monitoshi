@@ -58,7 +58,7 @@ console.info('***********************************');
 
 var WebHookAlert = require('./alert/web-hook');
 var PingMonitor = require('./monitor/ping');
-var monitor = new PingMonitor(config.timeout, config.interval, config.attempts);
+var monitor = new PingMonitor(config.timeout, config.interval);
 
 // loop on data
 var DataManager = require('./queue/data-manager');
@@ -123,13 +123,16 @@ monitor
         console.info('** Monitor',  currentData, 'is now up', statusCode);
         sendUpEmail(currentData);
     }
-    dataManager.unlock(currentData, {state: 'up'}, function(err, result) {
+    dataManager.unlock(currentData, {state: 'up', consecutiveFails: 0}, function(err, result) {
         nextLoop();
     });
 })
 .on('error', function(err) {
-    if(currentData.state === 'up') {
+    let consecutiveFails = currentData.consecutiveFails || 0;
+    let state = currentData.state || 'down';
+    if(state === 'up' && consecutiveFails >= config.attempts) {
         console.info('** Monitor',  currentData, 'is now down -', err);
+        state = 'down';
         sendDownEmail(currentData);
         dataManager.store('stats',  {
           $inc: {
@@ -137,7 +140,7 @@ monitor
           }
         }, function(err, result) {});
     }
-    dataManager.unlock(currentData, {state: 'down'}, function(err, result) {
+    dataManager.unlock(currentData, {state: state, consecutiveFails: consecutiveFails + 1}, function(err, result) {
         nextLoop();
     });
 });

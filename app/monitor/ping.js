@@ -10,9 +10,8 @@ var util = require('util');
  * @param {Object} config object containing other config elements (name, url)
  * @param {?number=} opt_timeout  timeout after which the website is considered to be down (ms), default is 1000
  * @param {?number=} opt_interval interval after which the website is polled again (ms), default is 1000
- * @param {?number=} opt_attempts number of attempts before an URL is considered down, default is 3
  */
-module.exports = PingMonitor = function(opt_timeout, opt_interval, opt_attempts) {
+module.exports = PingMonitor = function(opt_timeout, opt_interval) {
 
     /**
      * timeout after which the website is considered to be down
@@ -21,15 +20,6 @@ module.exports = PingMonitor = function(opt_timeout, opt_interval, opt_attempts)
      * @default 10000
      */
     this.timeout = opt_timeout || 10000;
-
-
-    /**
-     * number of attempts before an URL is considered down
-     * @type {number}
-     * @default 3
-     */
-    this.attempts = opt_attempts || 3;
-
 
     // call super
     events.EventEmitter.call(this);
@@ -44,9 +34,8 @@ util.inherits(PingMonitor, events.EventEmitter);
  * @param {string} url
  * @param {boolean} isUp
  */
-PingMonitor.prototype.poll = function(url, opt_failed) {
+PingMonitor.prototype.poll = function(url) {
     var hasTimedout = false;
-    var failed = opt_failed || 0;
     // handle https as well as http
     // FIXME: better use https://www.npmjs.com/package/request
     var service = url.indexOf('https') === 0 ? https : http;
@@ -60,32 +49,19 @@ PingMonitor.prototype.poll = function(url, opt_failed) {
                 this.emit('success', res.statusCode);
             }
             else {
-                if(++failed >= this.attempts) {
-                    this.emit('error', new Error('HTTPERROR', res.statusCode));
-                }
-                else {
-                    this.poll(url, failed);
-                }
+                this.emit('error', new Error('HTTPERROR', res.statusCode));
             }
         }.bind(this))
         .on('error', function(e) {
             // just in case, to prevent fireing timeout
             req.abort();
-            if(++failed >= this.attempts) {
-                // notify the listeners
-                var error = e;
-                if(hasTimedout === true) {
-                    hasTimedout = false;
-                    error = new Error('TIMEOUT');
-                }
-                this.emit('error', error);
+            // notify the listeners
+            var error = e;
+            if(hasTimedout === true) {
+                hasTimedout = false;
+                error = new Error('TIMEOUT');
             }
-            else {
-                // Wait a bit before polling it again
-                setTimeout(function(){
-                  this.poll(url, failed);
-                }.bind(this), 500);
-            }
+            this.emit('error', error);
         }.bind(this))
         .on('socket', function (socket) {
             socket.setTimeout(this.timeout);

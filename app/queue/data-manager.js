@@ -64,8 +64,8 @@ DataManager.prototype.lockNext = function(delay, cbk) {
 * @param {function(err:String)} cbk
 */
 DataManager.prototype.unlock = function(data, changes, cbk) {
-// update __lastProcessed + set flag __lockedBy=''
- changes.__lockedBy = '';
+  // update __lastProcessed + set flag __lockedBy=''
+  changes.__lockedBy = '';
   changes.__lastProcessed = Date.now();
   this.collection.findAndModify(
     data, [], {
