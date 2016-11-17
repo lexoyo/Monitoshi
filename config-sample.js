@@ -9,5 +9,13 @@ module.exports = {
             "user": 'sender@gmail.com',
             "pass": 'password'
         }
+    },
+    "webHook": {
+        url: 'https://maker.ifttt.com/trigger/monitoshi_event/with/key/YOUR IFTTT ID FOR THE MAKER TRIGGER (see https://ifttt.com/maker)',
+        method: 'get',
+        params: '',
+        post_options: {},
+        titleFieldName: 'value1',
+        detailsFieldName: 'value2'
     }
 };

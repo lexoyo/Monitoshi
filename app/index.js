@@ -56,9 +56,15 @@ console.info('***********************************');
 console.info('Monitoshi starting');
 console.info('***********************************');
 
-var WebHookAlert = require('./alert/web-hook');
-var PingMonitor = require('./monitor/ping');
-var monitor = new PingMonitor(config.timeout, config.interval);
+const AlertData = require('./alert/AlertData.js');
+const alertData = new AlertData(config);
+const AlertType = require('./alert/AlertData.js').AlertType;
+const EMailAlert = require('./alert/EMail.js');
+const eMailAlert = new EMailAlert(config);
+const WebHookAlert = require('./alert/web-hook');
+const webHookAlert = new WebHookAlert(config);
+const PingMonitor = require('./monitor/ping');
+const monitor = new PingMonitor(config.timeout, config.interval);
 
 // loop on data
 var DataManager = require('./queue/data-manager');
@@ -121,7 +127,8 @@ monitor
 .on('success', function(statusCode) {
     if(currentData.state === 'down') {
         console.info('** Monitor',  currentData, 'is now up', statusCode);
-        sendUpEmail(currentData);
+        eMailAlert.send(alertData.createEvent(AlertType.UP, currentData));
+        webHookAlert.send(alertData.createEvent(AlertType.UP, currentData));
     }
     dataManager.unlock(currentData, {state: 'up', consecutiveFails: 0}, function(err, result) {
         nextLoop();
@@ -133,7 +140,8 @@ monitor
     if(state === 'up' && consecutiveFails >= config.attempts) {
         console.info('** Monitor',  currentData, 'is now down -', err);
         state = 'down';
-        sendDownEmail(currentData);
+        eMailAlert.send(alertData.createEvent(AlertType.DOWN, currentData));
+        webHookAlert.send(alertData.createEvent(AlertType.DOWN, currentData));
         dataManager.store('stats',  {
           $inc: {
             downtimesCount: 1
@@ -174,7 +182,8 @@ app.post('/monitor', function(req, res) {
       }
       else {
           if(data) {
-              sendConfirmationEmail(req.protocol + '://' + req.get('host'), data._id, data.email, data.url);
+              eMailAlert.send(alertData.createEvent(AlertType.CONFIRM, data));
+              webHookAlert.send(alertData.createEvent(AlertType.CONFIRM, data));
               displayResult(req, res, {"success": true, "message": "The monitor is created, please check your emails and activate it."});
           }
           else {
@@ -212,7 +221,8 @@ app.get('/monitor/:id/enable', function(req, res) {
       }
       else {
           if(data) {
-            sendStartEmail(req.protocol + '://' + req.get('host'), data._id, data.email, data.url, data.__badgeId);
+            eMailAlert.send(alertData.createEvent(AlertType.START, data));
+            webHookAlert.send(alertData.createEvent(AlertType.START, data));
             displayResult(req, res, {"success": true, "message": "The monitor is now active."});
           }
           else {
@@ -240,7 +250,8 @@ app.get('/monitor/:id/del', function(req, res) {
       }
       else {
         if(data) {
-            sendStopEmail(req.protocol + '://' + req.get('host'), data._id, data.email, data.url);
+            eMailAlert.send(alertData.createEvent(AlertType.STOP, data));
+            webHookAlert.send(alertData.createEvent(AlertType.STOP, data));
             displayResult(req, res, {"success": true, "message": "The monitor has been deleted."});
         }
         else {
@@ -299,59 +310,4 @@ if (!module.parent) {
 }
 else {
     console.log('do not listen to any port since there is a parent app');
-}
-
-// confirmation emails
-var nodemailer = require('nodemailer');
-var transporter = nodemailer.createTransport(config.nodemailer);
-function sendConfirmationEmail(serverUrl, id, email, url) {
-    var callbackUrl = serverUrl + '/monitor/' + id + '/enable';
-    console.log('sendConfirmationEmail', callbackUrl, email, url);
-    transporter.sendMail({
-        from: config.nodemailer.auth.user,
-        to: email,
-        subject: 'Confirm monitor creation',
-        text: 'Click the link bellow to allow Monitoshi to warn you by email when your site (' + url + ') is down.\n\n' + callbackUrl
-    });
-}
-function sendStartEmail(serverUrl, id, email, url, badgeId) {
-    var callbackUrl = serverUrl + '/monitor/' + id + '/del';
-    var badgeUrl = serverUrl + '/badge/' + badgeId;
-    console.log('sendStartEmail', callbackUrl, email, url, badgeUrl);
-    transporter.sendMail({
-        from: config.nodemailer.auth.user,
-        to: email,
-        subject: 'Monitor Created',
-        text: 'This is an email to confirm that Monitoshi will warn you by email when ' + url + ' is down.\n\nIf you want TO DELETE it one day, and prevent Monitoshi to watch for this website, follow this link: ' + callbackUrl +
-          '\n\nAnd if you need a badge to display the state of your site (up or down), use this URL: ' + badgeUrl
-    });
-}
-function sendStopEmail(serverUrl, id, email, url) {
-    console.log('sendStopEmail', email, url);
-    transporter.sendMail({
-        from: config.nodemailer.auth.user,
-        to: email,
-        subject: 'Monitor Deleted',
-        text: 'This is an email to confirm the deletion of a monitor. Monitoshi will not warn you anymore when ' + url + ' is down.'
-    });
-}
-function sendDownEmail(data) {
-    var callbackUrl = data.serverUrl + '/monitor/' + data._id + '/del';
-    console.log('sendDownEmail', data.email, data.url);
-    transporter.sendMail({
-        from: config.nodemailer.auth.user,
-        to: data.email,
-        subject: '[Alert]Your website is DOWN',
-        text: 'This is an email to warn you that ' + data.url + ' is down.\n\nIf you want me to stop monitoring this website, follow this link: ' + callbackUrl
-    });
-}
-function sendUpEmail(data) {
-    var callbackUrl = data.serverUrl + '/monitor/' + data._id + '/del';
-    console.log('sendUpEmail', data.email, data.url);
-    transporter.sendMail({
-        from: config.nodemailer.auth.user,
-        to: data.email,
-        subject: '[Alert]Your website is UP',
-        text: 'This is an email to inform you that ' + data.url + ' is up again.\n\nIf you want me to stop monitoring this website, follow this link: ' + callbackUrl
-    });
 }
