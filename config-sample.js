@@ -16,6 +16,8 @@ module.exports = {
         params: '',
         post_options: {},
         titleFieldName: 'value1',
-        detailsFieldName: 'value2'
+        urlFieldName: 'value2',
+        emailFieldName: 'value3',
+        detailsFieldName: 'value4'
     }
 };

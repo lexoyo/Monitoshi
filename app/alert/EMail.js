@@ -6,8 +6,9 @@ module.exports = class EMail {
         this.from = config.nodemailer.auth.user;
     }
     send(event) {
-        console.log('send Email', event);
         event.from = this.from;
+        event.to = event.email;
+        console.log('send Email', event.to, event.email, event.subject);
         this.transporter.sendMail(event);
     }
 }
