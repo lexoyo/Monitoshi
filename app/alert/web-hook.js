@@ -38,8 +38,13 @@ WebHookAlert.prototype.send = function(event) {
             protocol = https;
         }
         if (this.config.webHook['method'] === 'get') {
-            const url = `${this.config.webHook.url}?${this.config.webHook.params}&${titleFieldName}=${event.subject}&${detailsFieldName}=${event.text}&${urlFieldName}=${event.url}&${emailFieldName}=${event.email}`;
-            const req = protocol.get(url, (res) => {});
+            try {
+                const url = `${this.config.webHook.url}?${this.config.webHook.params}&${titleFieldName}=${event.subject}&${detailsFieldName}=${event.text}&${urlFieldName}=${event.url}&${emailFieldName}=${event.email}`;
+                const req = protocol.get(url);
+            }
+            catch(e) {
+                console.log('error while calling the webhook', this.config.webHook.url);
+            }
         }
         else {
             var query = {};
@@ -52,10 +57,8 @@ WebHookAlert.prototype.send = function(event) {
             post_options.headers['Content-Length'] = postData.length;
 
             // Set up the request
-            // FIXME: handle errors (it crashes the app for now)
             var post_req = protocol.request(post_options, function(res) {
                 res.setEncoding('utf8');
-                res.on('data', function (chunk) {});
             });
             // post the data
             post_req.write(postData);

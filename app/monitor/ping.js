@@ -49,8 +49,7 @@ PingMonitor.prototype.poll = function(url) {
                 this.emit('success', res.statusCode);
             }
             else {
-                console.log('HTTPERROR with status', res.statusCode);
-                this.emit('error', new Error('HTTPERROR', res.statusCode));
+                this.emit('error', new Error('HTTPERROR' + res.statusCode));
             }
         }.bind(this))
         .on('error', function(e) {
@@ -62,13 +61,11 @@ PingMonitor.prototype.poll = function(url) {
                 hasTimedout = false;
                 error = new Error('TIMEOUT');
             }
-            console.log('HTTPERROR had the error', e);
             this.emit('error', error);
         }.bind(this))
         .on('socket', function (socket) {
             socket.setTimeout(this.timeout);
             socket.on('timeout', function(e) {
-                console.log('HTTPERROR socket timed out', e);
                 hasTimedout = true;
                 req.abort();
             }.bind(this));
