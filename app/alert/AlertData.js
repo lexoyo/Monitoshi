@@ -49,6 +49,7 @@ If you want me to stop monitoring this website, follow this link: ${actionUrl}`;
             default:
                 throw('unknown type: ' + type);
         }
+        console.log('created event', event.subject, event.actionUrl);
         return event;
     }
     getActionUrl(type, data) {
