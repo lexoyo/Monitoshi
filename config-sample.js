@@ -1,4 +1,5 @@
 module.exports = {
+    "num_runners": 100,
     "interval": 10000,
     "timeout": 10000,
     "attempts": 3,

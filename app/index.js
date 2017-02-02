@@ -2,8 +2,6 @@
 var express    = require('express');
 var app = module.exports = express();
 var bodyParser = require('body-parser');
-var Logger = require('./logger');
-var logger = new Logger();
 
 // config
 var config;
@@ -18,6 +16,8 @@ else {
         process.env.MT_CONFIG_FILE,
         'The config will be read from', configFile);
 }
+const NUM_RUNNERS = config.num_runners || process.env['NUM_RUNNERS'] || 10;
+
 function displayResult(req, res, data) {
   if(req.query.format === 'json') {
     if(data.success === true) res.status(200);
@@ -56,22 +56,18 @@ console.info('***********************************');
 console.info('Monitoshi starting');
 console.info('***********************************');
 
+const EMailAlert = require('./alert/EMail.js');
+const eMailAlert = new EMailAlert(config);
 const AlertData = require('./alert/AlertData.js');
 const alertData = new AlertData(config);
 const AlertType = require('./alert/AlertData.js').AlertType;
-const EMailAlert = require('./alert/EMail.js');
-const eMailAlert = new EMailAlert(config);
 const WebHookAlert = require('./alert/web-hook');
 const webHookAlert = new WebHookAlert(config);
-const PingMonitor = require('./monitor/ping');
-const monitor = new PingMonitor(config.timeout, config.interval);
+const Runner = require('./runner');
 
 // loop on data
 var DataManager = require('./queue/data-manager');
-var dataManager = new DataManager('inst1', init);
-var currentData = null;
-
-function init() {
+var dataManager = new DataManager(() => {
   dataManager.store('stats',  {
     $setOnInsert: {
       created: Date.now(),
@@ -90,73 +86,24 @@ function init() {
       }
     }, function(err, result) {
       console.log('started', err, result);
-      nextLoop();
     });
   });
-}
-
-function nextLoop() {
-    dataManager.unlockAll(function(err, result) {
-        dataManager.lockNext(config.interval, function(err, result) {
-            if(result) {
-                currentData = result;
-                monitor.poll(currentData.url);
-                // remember number of pings per hours
-                const inc = {};
-                const set = {};
-                // increment current hour
-                inc['pingsPerHours.' + (new Date()).getHours()] = 1;
-                // reset next hour
-                set['pingsPerHours.' + ((new Date()).getHours() + 1) % 24] = 0;
-                dataManager.store('stats',  {
-                  $inc: inc,
-                  $set: set,
-                }, function(err, result) {
-                  // success
-                  // console.log('stats', result);
-                });
-            }
-            else {
-                // no data in the DB
-                setTimeout(nextLoop, 100);
-            }
-        });
-    });
-}
-monitor
-.on('success', function(statusCode) {
-    if(currentData.state === 'down') {
-        console.info('** Monitor',  currentData, 'is now up', statusCode);
-        eMailAlert.send(alertData.createEvent(AlertType.UP, currentData));
-        webHookAlert.send(alertData.createEvent(AlertType.UP, currentData));
+  dataManager.unlockAll((err, result) => {
+    console.log('unlockAll done (err=', err, ')');
+    let num = 0;
+    for(idx=0; idx<NUM_RUNNERS; idx++) {
+      setTimeout(
+        () => new Runner(config, `runner${num++}`, dataManager, eMailAlert, alertData, webHookAlert),
+        100);
     }
-    dataManager.unlock(currentData, {state: 'up', consecutiveFails: 0}, function(err, result) {
-        nextLoop();
-    });
-})
-.on('error', function(err) {
-    let consecutiveFails = currentData.consecutiveFails || 0;
-    let state = currentData.state || 'down';
-    if(state === 'up' && consecutiveFails >= config.attempts) {
-        console.info('** Monitor',  currentData, 'is now down -', err);
-        state = 'down';
-        eMailAlert.send(alertData.createEvent(AlertType.DOWN, currentData));
-        webHookAlert.send(alertData.createEvent(AlertType.DOWN, currentData));
-        dataManager.store('stats',  {
-          $inc: {
-            downtimesCount: 1
-          }
-        }, function(err, result) {});
-    }
-    dataManager.unlock(currentData, {state: state, consecutiveFails: consecutiveFails + 1}, function(err, result) {
-        nextLoop();
-    });
+  });
 });
 
 // API
 app.use(bodyParser.json()); // for parsing application/json
 app.use(bodyParser.urlencoded({ extended: true })); // for parsing application/x-www-form-urlencoded
 if(process.env.MONITOSHI_ADMIN_PASS) {
+  console.warn('there is an admin pass, the dashboard will be exposed!!');
   app.get('/' + process.env.MONITOSHI_ADMIN_PASS + '/', function(req, res) {
     dataManager.list(function(err, dataArr) {
       if(err) {

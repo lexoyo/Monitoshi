@@ -59,7 +59,9 @@ Alternatively you can use the excellent [pm2 process manager](http://pm2.keymetr
 
 The `MT_CONFIG` environment variable may contain a config json string, like the provided sample [config-sample.js](https://github.com/lexoyo/Monitoshi/blob/master/config-sample.js) but without line breaks. Alternatively you can provide the path of a json file (also like [config-sample.js](https://github.com/lexoyo/Monitoshi/blob/master/config-sample.js)) in the environment variable `MT_CONFIG_FILE`. Last method you can use for the config: if you use [Heroku](https://www.heroku.com) for hosting, see [how to set environment variables on your VM](https://devcenter.heroku.com/articles/config-vars), and this [useful plugin to handle config](https://github.com/ddollar/heroku-config).
 
-Example of config:
+Use `NUM_RUNNERS` env var or `"num_runners": 100,` in the config to set the number of monitors running simultanneously, each one checking 1 website at a time.
+
+### Example of config
 
 ```
 {

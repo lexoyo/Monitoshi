@@ -11,8 +11,7 @@ var collectionName = process.env['MONITOSHI_COLLECTION_NAME'] ? process.env['MON
  * this means to access the DB and get/set data
  * @class DataManager
  */
-module.exports = DataManager = function(idDyno, ready) {
-  this.idDyno = idDyno;
+module.exports = DataManager = function(ready) {
   // connect to db
   console.log('Connecting to mongodb ' + mongodbUri.substr(0, 30) + '... - collectionName=' + collectionName);
   // Use connect method to connect to the Server
@@ -38,18 +37,19 @@ module.exports = DataManager = function(idDyno, ready) {
 /**
  * get the next data to process and lock it
  * @param {function(err:String, result:object)} cbk
+ * @param {string} id of the runner which locks the data manager
  * @param {number} delay minimum allowed delay between last update and now
  */
-DataManager.prototype.lockNext = function(delay, cbk) {
- // findAndModify oldest __lastProcessed with __lockedBy='' + set flag __lockedBy=ID_DYNO
- this.collection.findAndModify({
+DataManager.prototype.lockNext = function(delay, id, cbk) {
+  // findAndModify oldest __lastProcessed with __lockedBy='' + set flag __lockedBy=ID_DYNO
+  this.collection.findAndModify({
       __enabled: true,
       __lockedBy: '',
       __lastProcessed: {
         $lt: Date.now() - delay
       }
     }, [['__lastProcessed', 'ascending']], {
-      $set: {__lockedBy: this.idDyno}
+      $set: {__lockedBy: id}
     },
     {new: true},
   function(err, result) {
@@ -59,10 +59,9 @@ DataManager.prototype.lockNext = function(delay, cbk) {
 
 
 /**
-* unlock the data after process, update the __lastProcessed date
-* @param {string} id
-* @param {function(err:String)} cbk
-*/
+ * unlock the data after process, update the __lastProcessed date
+ * @param {function(err:String)} cbk
+ */
 DataManager.prototype.unlock = function(data, changes, cbk) {
   // update __lastProcessed + set flag __lockedBy=''
   changes.__lockedBy = '';
@@ -73,19 +72,21 @@ DataManager.prototype.unlock = function(data, changes, cbk) {
     },
     {new: true},
   function(err, result) {
+    console.log('unlocked ', err, data.url, changes.state);
     cbk(err, result ? result.value : null);
   });
 };
 
 
 /**
-* unlock all the data locked with the given ID
-* @param {function(err:String)} cbk
-*/
+ * unlock all the data locked with the given ID
+ * @param {string} id of the runner which locks the data manager
+ * @param {function(err:String)} cbk
+ */
 DataManager.prototype.unlockAll = function(cbk) {
 // findAndModify doc with flag __lockedBy==ID_DYNO   => __lockedBy=''
  this.collection.update({
-      __lockedBy: this.idDyno
+      // __lockedBy: id
     }, {
       $set: {__lockedBy: ''}
     },
