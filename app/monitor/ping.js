@@ -9,9 +9,8 @@ var util = require('util');
  * @class PingMonitor
  * @param {Object} config object containing other config elements (name, url)
  * @param {?number=} opt_timeout  timeout after which the website is considered to be down (ms), default is 1000
- * @param {?number=} opt_interval interval after which the website is polled again (ms), default is 1000
  */
-module.exports = PingMonitor = function(opt_timeout, opt_interval) {
+module.exports = PingMonitor = function(opt_timeout) {
 
     /**
      * timeout after which the website is considered to be down

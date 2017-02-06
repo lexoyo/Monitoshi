@@ -3,7 +3,7 @@ const PingMonitor = require('./monitor/ping');
 
 module.exports = class Runner {
   constructor(config, id, dataManager, eMailAlert, alertData, webHookAlert) {
-    this.monitor = new PingMonitor(config.timeout, config.interval);
+    this.monitor = new PingMonitor();
     this.currentData = {};
     this.monitor
     .on('success', (statusCode) => {
@@ -61,7 +61,7 @@ module.exports = class Runner {
               // no data in the DB
               setTimeout(
                 () => this.run(config, id, dataManager, eMailAlert, alertData, webHookAlert),
-                config.interval
+                Math.round(config.interval * Math.random())
               );
           }
       });

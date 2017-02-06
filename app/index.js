@@ -94,7 +94,7 @@ var dataManager = new DataManager(() => {
     for(idx=0; idx<NUM_RUNNERS; idx++) {
       setTimeout(
         () => new Runner(config, `runner${num++}`, dataManager, eMailAlert, alertData, webHookAlert),
-        100);
+        100 * num);
     }
   });
 });
