@@ -9,8 +9,8 @@
         Add a monitor to be notified by email when the website is down.
     </p>
     <form action="/monitor" method="POST">
-        <input type="email" name="email" placeholder="you@mail.com">
-        <input type="url" name="url" placeholder="http://your-site.com">
+        <input type="email" name="email" placeholder="you@mail.com" required>
+        <input type="url" name="url" placeholder="http://your-site.com" required>
         <input type="hidden" id="siteName" name="siteName" value="">
         <button type="submit">OK</button>
     </form>
