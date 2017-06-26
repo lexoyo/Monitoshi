@@ -40,7 +40,6 @@ module.exports = class Runner {
       dataManager.lockNext(config.interval, id, (err, result) => {
           if(result) {
               this.currentData = result;
-              console.log('runner', id, 'takes monitor', this.currentData.url);
               this.monitor.poll(this.currentData.url);
               // remember number of pings per hours
               const inc = {};

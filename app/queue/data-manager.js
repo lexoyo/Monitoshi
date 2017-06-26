@@ -72,7 +72,6 @@ DataManager.prototype.unlock = function(data, changes, cbk) {
     },
     {new: true},
   function(err, result) {
-    console.log('unlocked ', err, data.url, changes.state);
     cbk(err, result ? result.value : null);
   });
 };
