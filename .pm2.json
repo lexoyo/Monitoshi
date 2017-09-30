@@ -3,6 +3,8 @@
     "name"        : "Monitoshi",
     "script"      : "app/index.js",
     "watch"       : true,
+    "exec_mode"   : "cluster",
+    "instances"   : "max",
     "ignore_watch": ["data", "node_modules", ".git", "public"],
     "env": {
     }

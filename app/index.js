@@ -93,7 +93,7 @@ var dataManager = new DataManager(() => {
     let num = 0;
     for(idx=0; idx<NUM_RUNNERS; idx++) {
       setTimeout(
-        () => new Runner(config, `runner${num++}`, dataManager, eMailAlert, alertData, webHookAlert),
+        () => new Runner(config, `runner${num++}_${Math.round(Math.random()*1000000000).toString(26)}`, dataManager, eMailAlert, alertData, webHookAlert),
         100 * num);
     }
   });
