@@ -73,5 +73,6 @@ PingMonitor.prototype.poll = function(url) {
     catch(e) {
         // this happens when url is like https:www.abcdefgh.com.br/
         console.error('Poll Error', url, e);
+        this.emit('error', e);
     }
 };

@@ -16,7 +16,7 @@
     "rest",
     "api"
   ],
-  "main": "pm2 start .pm2.json",
+  "main": "pm2 start .pm2.json -i max",
   "license": "MIT",
   "engines": {
     "node": "~6.2.2"
@@ -34,7 +34,7 @@
   },
   "scripts": {
     "start": "node app/",
-    "watch": "pm2 start .pm2.json",
+    "watch": "pm2 start .pm2.json -i max",
     "logs": "pm2 logs",
     "serve": "mongod -dbpath ./data"
   }
