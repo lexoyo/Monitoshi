@@ -39,6 +39,7 @@ module.exports = class Runner {
   run(config, id, dataManager, eMailAlert, alertData, webHookAlert) {
       dataManager.lockNext(config.interval, id, (err, result) => {
           if(result) {
+              console.log(`[${id}]`, 'polling', result.url, 'for', result.email, `(${result.state})`);
               this.currentData = result;
               this.monitor.poll(this.currentData.url);
               // remember number of pings per hours
