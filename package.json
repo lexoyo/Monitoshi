@@ -33,8 +33,7 @@
     "pm2": "1.1.3"
   },
   "scripts": {
-    "start": "node app/",
-    "watch": "pm2 start .pm2.json",
+    "start": "pm2 start .pm2.json",
     "logs": "pm2 logs",
     "serve": "mongod -dbpath ./data"
   }
