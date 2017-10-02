@@ -3,6 +3,7 @@ module.exports = {
     "interval": 10000,
     "timeout": 10000,
     "attempts": 3,
+    "verbose": false,
     "nodemailer": {
         "comment": 'gmail is complicated since https://nodemailer.com/using-gmail/ you will probably need smtp',
         "service": 'gmail',
