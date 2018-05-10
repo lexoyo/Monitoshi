@@ -4,7 +4,7 @@
 
 Ping URLs and send email alerts when it is down or goes up again.
 
-I have [an instance online here](https://monitoshi.herokuapp.com/), feel free to use it - I use it myself to monitor my websites.
+I have [an instance online here](https://monitoshi.lexoyo.me/), feel free to use it - I use it myself to monitor my websites.
 
 ### How does it work?
 

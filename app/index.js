@@ -2,6 +2,7 @@
 var express    = require('express');
 var app = module.exports = express();
 var bodyParser = require('body-parser');
+var moment = require('moment');
 
 // config
 var config;
@@ -150,11 +151,13 @@ app.get('/info', function(req, res) {
               // compute the interval between 2 pings (using the pingsPerHours of the last hour)
               if(pingsPerHour) pingsIntervalPerUrl = Math.round(count * 60 * 60 / pingsPerHour);
             }
+            var humanDuration = moment.duration(pingsIntervalPerUrl, 's').humanize();
             res.render('info.ejs', {
                 "downtimes": stats.downtimesCount,
                 "created": new Date(stats.created),
                 "monitors": count,
-                "pingsIntervalPerUrl": pingsIntervalPerUrl
+                "pingsIntervalPerUrl": pingsIntervalPerUrl,
+                "humanizedIntervalPerUrl": humanDuration,
             });
         });
     });
@@ -225,7 +228,6 @@ function serveBadge(res, left, right, color) {
 }
 app.get('/badge/:id', function(req, res) {
   dataManager.getDataFromBadge(req.params.id, function(err, data) {
-    console.log('Route:: badge', req.params.id, data);
     if(err) {
       serveBadge(res, 'badge', 'error', 'grey');
     }
