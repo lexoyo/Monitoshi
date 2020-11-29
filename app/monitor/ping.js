@@ -34,44 +34,51 @@ util.inherits(PingMonitor, events.EventEmitter);
  * @param {boolean} isUp
  */
 PingMonitor.prototype.poll = function(url) {
-    var hasTimedout = false;
-    // handle https as well as http
-    // FIXME: better use https://www.npmjs.com/package/request
-    var service = url.indexOf('https') === 0 ? https : http;
-    try {
-        // do the request to get the website
-        var req = service.get(url, function(res) {
-            // abort, otherwise it emmits a socket timeout after the timeout is elapsed
-            req.abort();
-            // notify the listeners
-            if(res.statusCode === 200) {
-                this.emit('success', res.statusCode);
-            }
-            else {
-                this.emit('error', new Error('HTTPERROR' + res.statusCode));
-            }
-        }.bind(this))
-        .on('error', function(e) {
-            // just in case, to prevent fireing timeout
-            req.abort();
-            // notify the listeners
-            var error = e;
-            if(hasTimedout === true) {
-                hasTimedout = false;
-                error = new Error('TIMEOUT');
-            }
-            this.emit('error', error);
-        }.bind(this))
-        .on('socket', function (socket) {
-            socket.setTimeout(this.timeout);
-            socket.on('timeout', function(e) {
-                hasTimedout = true;
+    if(url.startsWith('http://') || url.startsWith('https://')) {
+        var hasTimedout = false;
+        // handle https as well as http
+        // FIXME: better use https://www.npmjs.com/package/request
+        var service = url.indexOf('https') === 0 ? https : http;
+        try {
+            // do the request to get the website
+            var req = service.get(url, function(res) {
+                // abort, otherwise it emmits a socket timeout after the timeout is elapsed
                 req.abort();
+                // notify the listeners
+                if(res.statusCode === 200) {
+                    this.emit('success', res.statusCode);
+                }
+                else {
+                    this.emit('error', new Error('HTTPERROR' + res.statusCode));
+                }
+            }.bind(this))
+            .on('error', function(e) {
+                // just in case, to prevent fireing timeout
+                req.abort();
+                // notify the listeners
+                var error = e;
+                if(hasTimedout === true) {
+                    hasTimedout = false;
+                    error = new Error('TIMEOUT');
+                }
+                this.emit('error', error);
+            }.bind(this))
+            .on('socket', function (socket) {
+                socket.setTimeout(this.timeout);
+                socket.on('timeout', function(e) {
+                    hasTimedout = true;
+                    req.abort();
+                }.bind(this));
             }.bind(this));
-        }.bind(this));
+        }
+        catch(e) {
+            // this happens when url is like https:www.abcdefgh.com.br/
+            console.error('Poll Error', url, e);
+            this.emit('error', e);
+        }
     }
-    catch(e) {
-        // this happens when url is like https:www.abcdefgh.com.br/
+    else {
+        var e = new Error('Unknown protocol for URL ' + url);
         console.error('Poll Error', url, e);
         this.emit('error', e);
     }
