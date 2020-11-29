@@ -1,10 +1,22 @@
-// includes
-var Db = require('mongodb').Db,
-  ObjectID = require('mongodb').ObjectID,
-  MongoClient = require('mongodb').MongoClient;
+const ObjectID = require('mongodb').ObjectID
+const { MongoClient } = require("mongodb");
+
 // config
-var mongodbUri = process.env['MONGODB_URI'] ? process.env['MONGODB_URI'] : 'mongodb://localhost:27017/monitoshi';
-var collectionName = process.env['MONITOSHI_COLLECTION_NAME'] ? process.env['MONITOSHI_COLLECTION_NAME'] : 'monitoshi';
+const mongodbUri = process.env['MONGODB_URI'] ? process.env['MONGODB_URI'] : 'mongodb://localhost:27017/monitoshi';
+const collectionName = process.env['MONITOSHI_COLLECTION_NAME'] ? process.env['MONITOSHI_COLLECTION_NAME'] : 'monitoshi';
+const dbName = mongodbUri.split('/').pop()
+
+// Replace the uri string with your MongoDB deployment's connection string.
+const client = new MongoClient(mongodbUri);
+
+async function connect(cbk) {
+  try {
+    await client.connect();
+    cbk(null, client.db(dbName));
+  } catch(e) {
+    cbk(e)
+  }
+}
 
 /**
  * Handle data about monitored services
@@ -14,8 +26,7 @@ var collectionName = process.env['MONITOSHI_COLLECTION_NAME'] ? process.env['MON
 module.exports = DataManager = function(ready) {
   // connect to db
   console.log('Connecting to mongodb ' + mongodbUri.substr(0, 30) + '... - collectionName=' + collectionName);
-  // Use connect method to connect to the Server
-  MongoClient.connect(mongodbUri, function(err, db) {
+  connect(function(err, db) {
     this.db = db;
     if(err) {
       console.error('DataManager:: init db error', err);
